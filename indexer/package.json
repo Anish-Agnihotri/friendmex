@@ -4,7 +4,7 @@
   "main": "dist/src/index.js",
   "scripts": {
     "build": "npx prisma generate && tsc",
-    "start": "npm run build && node dist/src/index.js"
+    "start": "node dist/src/index.js"
   },
   "devDependencies": {
     "@types/node": "^20.4.10",
