@@ -2,6 +2,7 @@ import db from "@db/index";
 import ethers from "ethers";
 import Redis from "ioredis";
 import logger from "@utils/logger";
+import { getPrice } from "@utils/math";
 import constants from "@utils/constants";
 import axios, { type AxiosInstance } from "axios";
 
@@ -10,6 +11,8 @@ export default class Keeper {
   private redis: Redis;
   // RPC client
   private rpc: AxiosInstance;
+  // User to token supply (address => token supply)
+  private supply: Record<string, number> = {};
 
   /**
    * Create new Keeper
@@ -59,6 +62,55 @@ export default class Keeper {
         Number(value)
       : // Else return 1 block before contract deploy
         constants.CONTRACT_DEPLOY_BLOCK - 1;
+  }
+
+  /**
+   * Loads user token supplies from backend
+   */
+  async loadSupplies(): Promise<void> {
+    // Collect all users from database
+    const users: { address: string; supply: number }[] = await db.user.findMany(
+      {
+        select: {
+          address: true,
+          supply: true,
+        },
+      }
+    );
+
+    // Assign to local supply cache
+    for (const user of users) {
+      this.supply[user.address] = user.supply;
+    }
+
+    logger.info(`Loaded ${users.length} user supplies locally`);
+  }
+
+  /**
+   * Calculates trade cost based on bonding curve
+   * @param {string} subject address
+   * @param {number} amount to buy or sell
+   * @param {boolean} buy is a buy tx or a sell tx
+   * @returns {number} cost
+   */
+  getTradeCost(subject: string, amount: number, buy: boolean): number {
+    // If subject supply is not tracked locally
+    if (!this.supply.hasOwnProperty(subject)) {
+      // Update to 0
+      this.supply[subject] = 0;
+    }
+
+    if (buy) {
+      // Return price to buy tokens
+      const cost = getPrice(this.supply[subject], amount);
+      const fees = cost * constants.FEE * 2;
+      return cost + fees;
+    } else {
+      // Return price to sell tokens
+      const cost = getPrice(this.supply[subject] - amount, amount);
+      const fees = cost * constants.FEE * 2;
+      return cost - fees;
+    }
   }
 
   /**
@@ -112,8 +164,12 @@ export default class Keeper {
       blockNumber: number;
       from: string;
       subject: string;
+      isBuy: boolean;
       amount: number;
+      cost: number;
     }[] = [];
+    // List of users with modified supply balances
+    let userDiff: Set<string> = new Set();
     for (const block of data) {
       // For each transaction in block
       for (const tx of block.result.transactions) {
@@ -130,24 +186,78 @@ export default class Keeper {
           );
 
           // Collect params and create tx
+          const subject: string = result[0].toLowerCase();
           const amount: number = result[1].toNumber();
-          const direction: 1 | -1 =
-            tx.input.slice(0, 10) === constants.SIGNATURES.BUY ? 1 : -1;
+          const isBuy: boolean =
+            tx.input.slice(0, 10) === constants.SIGNATURES.BUY;
 
+          // Calculate cost of transaction
+          const cost: number = this.getTradeCost(subject, amount, isBuy);
+
+          // Push newly tracked transaction
           txs.push({
             hash: tx.hash,
             timestamp: Number(block.result.timestamp),
             blockNumber: Number(block.result.number),
             from: tx.from.toLowerCase(),
-            subject: result[0].toLowerCase(),
-            amount: amount * direction,
+            subject,
+            isBuy,
+            amount,
+            cost: Math.trunc(cost * 1e18),
           });
+
+          // Apply user token supply update
+          if (isBuy) {
+            this.supply[subject] += amount;
+          } else {
+            this.supply[subject] -= amount;
+          }
+          // Track user with supply diff
+          userDiff.add(subject);
         }
       }
     }
 
-    logger.info(`Found ${txs.length} transactions`);
-    console.log(txs);
+    logger.info(`Collected ${txs.length} transactions`);
+
+    // Setup subject updates
+    let subjectUpserts = [];
+    for (const subject of [...userDiff]) {
+      subjectUpserts.push(
+        db.user.upsert({
+          where: {
+            address: subject,
+          },
+          create: {
+            address: subject,
+            supply: this.supply[subject],
+          },
+          update: {
+            supply: this.supply[subject],
+          },
+        })
+      );
+    }
+
+    // Setup trade updates
+    let tradeInsert = db.trade.createMany({
+      data: txs.map((tx) => ({
+        hash: tx.hash,
+        timestamp: tx.timestamp,
+        blockNumber: tx.blockNumber,
+        fromAddress: tx.from,
+        subjectAddress: tx.subject,
+        isBuy: tx.isBuy,
+        amount: tx.amount,
+        cost: tx.cost,
+      })),
+    });
+
+    // Insert subjects and trades as atomic transaction
+    await db.$transaction([...subjectUpserts, tradeInsert]);
+    logger.info(
+      `Added ${subjectUpserts.length} subject updates, ${txs.length} trades`
+    );
 
     // Update latest synced block
     const ok = await this.redis.set("synced_block", endBlock);
@@ -155,6 +265,7 @@ export default class Keeper {
       logger.error("Error storing synced_block in cache");
       throw new Error("Could not synced_block store in Redis");
     }
+    logger.info(`Set last synced block to ${endBlock}`);
   }
 
   async syncTrades() {
@@ -189,6 +300,11 @@ export default class Keeper {
   }
 
   async sync() {
+    // Sync user supplies if first startup
+    if (Object.keys(this.supply).length === 0) {
+      await this.loadSupplies();
+    }
+
     // Sync trades
     await this.syncTrades();
 

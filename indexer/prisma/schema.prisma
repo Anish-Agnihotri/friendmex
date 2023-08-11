@@ -13,8 +13,6 @@ datasource db {
 model User {
   address   String   @id @unique
   supply    Int      @default(0)
-  volume    BigInt   @default(0)
-  profit    BigInt   @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -24,10 +22,13 @@ model User {
 
 model Trade {
   hash           String   @id @unique
-  timestamp      BigInt
+  timestamp      Int
   blockNumber    Int
   fromAddress    String
   subjectAddress String
+  isBuy          Boolean
+  amount         Int
+  cost           BigInt
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
