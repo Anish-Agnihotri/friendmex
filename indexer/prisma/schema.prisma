@@ -28,7 +28,7 @@ model Trade {
   subjectAddress String
   isBuy          Boolean
   amount         Int
-  cost           BigInt
+  cost           Decimal @db.Decimal(65, 0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

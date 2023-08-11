@@ -11,6 +11,8 @@ export default class Keeper {
   private redis: Redis;
   // RPC client
   private rpc: AxiosInstance;
+  // All tracked user address
+  private users: Set<string> = new Set();
   // User to token supply (address => token supply)
   private supply: Record<string, number> = {};
 
@@ -65,9 +67,9 @@ export default class Keeper {
   }
 
   /**
-   * Loads user token supplies from backend
+   * Loads user addresses and token supplies from backend
    */
-  async loadSupplies(): Promise<void> {
+  async loadUsersAndSupplies(): Promise<void> {
     // Collect all users from database
     const users: { address: string; supply: number }[] = await db.user.findMany(
       {
@@ -78,12 +80,14 @@ export default class Keeper {
       }
     );
 
-    // Assign to local supply cache
     for (const user of users) {
+      // Assign to list of users
+      this.users.add(user.address);
+      // Assign to local supply cache
       this.supply[user.address] = user.supply;
     }
 
-    logger.info(`Loaded ${users.length} user supplies locally`);
+    logger.info(`Loaded ${users.length} users locally`);
   }
 
   /**
@@ -170,6 +174,8 @@ export default class Keeper {
     }[] = [];
     // List of users with modified supply balances
     let userDiff: Set<string> = new Set();
+    // List of new users altogether
+    let newUsers: Set<string> = new Set();
     for (const block of data) {
       // For each transaction in block
       for (const tx of block.result.transactions) {
@@ -195,7 +201,7 @@ export default class Keeper {
           const cost: number = this.getTradeCost(subject, amount, isBuy);
 
           // Push newly tracked transaction
-          txs.push({
+          const transaction = {
             hash: tx.hash,
             timestamp: Number(block.result.timestamp),
             blockNumber: Number(block.result.number),
@@ -204,7 +210,8 @@ export default class Keeper {
             isBuy,
             amount,
             cost: Math.trunc(cost * 1e18),
-          });
+          };
+          txs.push(transaction);
 
           // Apply user token supply update
           if (isBuy) {
@@ -214,6 +221,16 @@ export default class Keeper {
           }
           // Track user with supply diff
           userDiff.add(subject);
+
+          // Track new users
+          if (!this.users.has(transaction.from)) {
+            this.users.add(transaction.from);
+            newUsers.add(transaction.from);
+          }
+          if (!this.users.has(transaction.subject)) {
+            this.users.add(transaction.subject);
+            newUsers.add(transaction.subject);
+          }
         }
       }
     }
@@ -222,7 +239,7 @@ export default class Keeper {
 
     // Setup subject updates
     let subjectUpserts = [];
-    for (const subject of [...userDiff]) {
+    for (const subject of new Set([...userDiff, ...newUsers])) {
       subjectUpserts.push(
         db.user.upsert({
           where: {
@@ -230,10 +247,10 @@ export default class Keeper {
           },
           create: {
             address: subject,
-            supply: this.supply[subject],
+            supply: this.supply[subject] ?? 0,
           },
           update: {
-            supply: this.supply[subject],
+            supply: this.supply[subject] ?? 0,
           },
         })
       );
@@ -300,9 +317,9 @@ export default class Keeper {
   }
 
   async sync() {
-    // Sync user supplies if first startup
+    // Sync users and token supplies if first startup
     if (Object.keys(this.supply).length === 0) {
-      await this.loadSupplies();
+      await this.loadUsersAndSupplies();
     }
 
     // Sync trades
