@@ -1,25 +1,15 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
-    "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "bundler",
-    "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
+    "lib": ["ES6"],
+    "target": "ES6",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
     "strict": true,
-    "downlevelIteration": true,
-    "skipLibCheck": true,
-    "jsx": "preserve",
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
-    "noEmit": true,
-    "types": [
-      "bun-types" // add Bun global
-    ],
-    "paths": {
-      "@db/*": ["./prisma/*"],
-      "@utils/*": ["./src/utils/*"]
-    }
+    "resolveJsonModule": true
   }
 }

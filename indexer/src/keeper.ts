@@ -1,9 +1,9 @@
-import db from "@db/index";
 import ethers from "ethers";
 import Redis from "ioredis";
-import logger from "@utils/logger";
-import { getPrice } from "@utils/math";
-import constants from "@utils/constants";
+import db from "../prisma/index";
+import logger from "./utils/logger";
+import { getPrice } from "./utils/math";
+import constants from "./utils/constants";
 import axios, { type AxiosInstance } from "axios";
 
 export default class Keeper {

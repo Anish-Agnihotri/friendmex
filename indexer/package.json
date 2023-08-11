@@ -1,13 +1,14 @@
 {
   "name": "indexer",
   "author": "Anish Agnihotri",
-  "module": "index.ts",
-  "type": "module",
+  "main": "dist/src/index.js",
   "scripts": {
-    "start": "bun src/index.ts"
+    "build": "npx prisma generate && tsc",
+    "start": "npm run build && node dist/src/index.js"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "@types/node": "^20.4.10",
+    "typescript": "^5.1.6"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
