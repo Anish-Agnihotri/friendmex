@@ -1,5 +1,5 @@
-import ethers from "ethers";
 import Redis from "ioredis";
+import { ethers } from "ethers";
 import db from "../prisma/index";
 import logger from "./utils/logger";
 import { getPrice } from "./utils/math";
