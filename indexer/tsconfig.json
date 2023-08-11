@@ -16,6 +16,10 @@
     "noEmit": true,
     "types": [
       "bun-types" // add Bun global
-    ]
+    ],
+    "paths": {
+      "@db/*": ["./prisma/*"],
+      "@utils/*": ["./src/utils/*"]
+    }
   }
 }
