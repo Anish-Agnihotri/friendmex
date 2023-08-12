@@ -6,4 +6,5 @@ export default {
     SELL: "0xb51d0534",
   },
   FEE: 0.05,
+  API: "https://prod-api.kosetto.com",
 };

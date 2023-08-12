@@ -1,5 +1,6 @@
 import Stats from "./stats";
 import Keeper from "./keeper";
+import Profile from "./profile";
 
 /**
  * Indexer execution lifecycle
@@ -16,6 +17,8 @@ async function execute(): Promise<void> {
   const keeper = new Keeper(RPC_URL, REDIS_URL);
   // Create new stats agent
   const stats = new Stats(REDIS_URL);
+  // Create new profile agent
+  const profile = new Profile();
   await Promise.all([
     // Run keeper sync
     keeper.sync(),
@@ -23,6 +26,8 @@ async function execute(): Promise<void> {
     stats.sync15s(),
     // Run stats 30m collection
     stats.sync30m(),
+    // Run profile sync
+    profile.sync(),
   ]);
 }
 
