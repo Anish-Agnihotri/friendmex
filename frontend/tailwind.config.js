@@ -31,6 +31,8 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       colors: {
+        buy: "#00A969",
+        sell: "#DF0E29",
         "bitmex-widget": "#FAFAFA",
         "bitmex-strong": "#EAECEF",
         "bitmex-strong-border": "#CBD0D7",

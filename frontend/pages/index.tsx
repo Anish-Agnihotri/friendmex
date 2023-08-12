@@ -1,20 +1,35 @@
 import Layout from "components/Layout";
 import GridLayout from "react-grid-layout";
-import type { User } from "@prisma/client";
 import { useEffect, useState } from "react";
+import type { User, Trade } from "@prisma/client";
 
 // Trading views
 import Chart from "components/trading/Chart";
+import Search from "components/trading/Search";
 import BuySell from "components/trading/BuySell";
 import Leaderboard from "components/trading/Leaderboard";
 import NewestUsers from "components/trading/NewestUsers";
 import RecentTrades from "components/trading/RecentTrades";
 import RealizedProfit from "components/trading/ProfitableUsers";
-import RecentUserTrades from "components/trading/RecentUserTrades";
 import RecentTokenTrades from "components/trading/RecentTokenTrades";
-import { getNewestUsers } from "./api/stats/newest";
 
-export default function Home({ newestUsers }: { newestUsers: User[] }) {
+// API
+import { getNewestUsers } from "./api/stats/newest";
+import { getLatestTrades } from "./api/stats/trades";
+import { getLeaderboardUsers } from "./api/stats/leaderboard";
+import { getRealizedProfits } from "./api/stats/realized";
+
+export default function Home({
+  newestUsers,
+  latestTrades,
+  leaderboardUsers,
+  realizedProfit,
+}: {
+  newestUsers: User[];
+  latestTrades: Trade[];
+  leaderboardUsers: (User & { cost: number })[];
+  realizedProfit: { address: string; profit: number }[];
+}) {
   // Window width
   const [width, setWidth] = useState(0);
 
@@ -37,19 +52,24 @@ export default function Home({ newestUsers }: { newestUsers: User[] }) {
   }, []);
 
   const layout = [
-    { i: "chart", x: 0, y: 0, w: 20, h: 3 },
+    { i: "search", x: 0, y: 0, w: 20, h: 0.5 },
+    { i: "chart", x: 0, y: 0, w: 20, h: 2.5 },
     { i: "buy_sell", x: 20, y: 0, w: 8, h: 3 },
     { i: "leaderboard", x: 28, y: 0, w: 8, h: 3 },
-    { i: "recent_trades", x: 0, y: 6, w: 9, h: 3 },
-    { i: "recent_token_trades", x: 9, y: 6, w: 9, h: 3 },
-    { i: "realized_profit", x: 18, y: 6, w: 9, h: 3 },
-    { i: "newest_users", x: 27, y: 6, w: 9, h: 3 },
-    { i: "user_trades", x: 0, y: 12, w: 36, h: 3 },
+    { i: "recent_trades", x: 0, y: 6, w: 36, h: 3 },
+    { i: "recent_token_trades", x: 0, y: 12, w: 18, h: 3 },
+    { i: "realized_profit", x: 18, y: 12, w: 9, h: 3 },
+    { i: "newest_users", x: 27, y: 12, w: 9, h: 3 },
   ];
 
   return (
     <Layout>
       <GridLayout layout={layout} cols={36} width={width}>
+        {/* Search */}
+        <div key="search">
+          <Search />
+        </div>
+
         {/* Trading chart */}
         <div key="chart">
           <Chart />
@@ -62,12 +82,12 @@ export default function Home({ newestUsers }: { newestUsers: User[] }) {
 
         {/* Leaderboard */}
         <div key="leaderboard">
-          <Leaderboard />
+          <Leaderboard users={leaderboardUsers} />
         </div>
 
         {/* Recent trades */}
         <div key="recent_trades">
-          <RecentTrades />
+          <RecentTrades trades={latestTrades} />
         </div>
 
         {/* Recent token trades */}
@@ -77,17 +97,12 @@ export default function Home({ newestUsers }: { newestUsers: User[] }) {
 
         {/* Most profitable users */}
         <div key="realized_profit">
-          <RealizedProfit />
+          <RealizedProfit profit={realizedProfit} />
         </div>
 
         {/* Newest users */}
         <div key="newest_users">
           <NewestUsers users={newestUsers} />
-        </div>
-
-        {/* User trades */}
-        <div key="user_trades">
-          <RecentUserTrades />
         </div>
       </GridLayout>
     </Layout>
@@ -97,10 +112,16 @@ export default function Home({ newestUsers }: { newestUsers: User[] }) {
 export async function getServerSideProps() {
   // Collect data
   const newestUsers = await getNewestUsers();
+  const latestTrades = await getLatestTrades();
+  const leaderboardUsers = await getLeaderboardUsers();
+  const realizedProfit = await getRealizedProfits();
 
   return {
     props: {
       newestUsers,
+      latestTrades,
+      leaderboardUsers,
+      realizedProfit,
     },
   };
 }

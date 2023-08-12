@@ -1,10 +1,45 @@
+import { Global } from "state/global";
 import type { AppProps } from "next/app";
 
 // CSS imports
 import "globals.css";
 import "react-resizable/css/styles.css";
 import "react-grid-layout/css/styles.css";
+import "@rainbow-me/rainbowkit/styles.css";
+
+// RainbowKit
+import { base } from "wagmi/chains";
+import { publicProvider } from "wagmi/providers/public";
+import { configureChains, createConfig, WagmiConfig } from "wagmi";
+import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+
+// Setup provider
+const { chains, publicClient } = configureChains([base], [publicProvider()]);
+
+// Setup connector
+const { connectors } = getDefaultWallets({
+  appName: "FriendMEX",
+  projectId: "FRIEND_MEX",
+  chains,
+});
+
+// Setup Wagmi config
+const wagmiConfig = createConfig({
+  autoConnect: true,
+  connectors,
+  publicClient,
+});
 
 export default function FriendMEX({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+  return (
+    // Wrap in RainbowKit providers
+    <WagmiConfig config={wagmiConfig}>
+      <RainbowKitProvider chains={chains}>
+        {/* Wrap in global state provider */}
+        <Global.Provider>
+          <Component {...pageProps} />
+        </Global.Provider>
+      </RainbowKitProvider>
+    </WagmiConfig>
+  );
 }

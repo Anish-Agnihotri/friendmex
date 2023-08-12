@@ -20,6 +20,8 @@ export default function NewestUsers({
 }) {
   // Newest users list
   const [users, setUsers] = useState<User[]>(defaultUsers);
+  const [_, setLastCheck] = useState<number>(+new Date() / 1000);
+  const [timeSince, setTimeSince] = useState<number>(0);
 
   /**
    * Collect users and update
@@ -35,6 +37,8 @@ export default function NewestUsers({
   useEffect(() => {
     async function run() {
       await updateUsers();
+      setLastCheck(+new Date() / 1000);
+      setTimeSince(0);
     }
 
     // Update every 15s
@@ -42,8 +46,20 @@ export default function NewestUsers({
     return () => clearInterval(interval);
   }, []);
 
+  // Update time since
+  useEffect(() => {
+    // Increment time since each second
+    const interval = setInterval(
+      () => setTimeSince((previous) => previous + 1),
+      1 * 1000
+    );
+
+    // Clear on dismount
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <Card title="Newest Users">
+    <Card title={`Newest Users (updated ${timeSince}s ago)`}>
       <div>
         <Table>
           <TableHeader>
@@ -67,7 +83,7 @@ export default function NewestUsers({
                   </a>
                 </TableCell>
                 <TableCell>{user.supply}</TableCell>
-                <TableCell>
+                <TableCell suppressHydrationWarning={true}>
                   {formatDistance(new Date(user.createdAt), new Date(), {
                     addSuffix: true,
                   })}

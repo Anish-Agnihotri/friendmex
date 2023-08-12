@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export default function Header() {
   return (
@@ -30,7 +31,7 @@ export default function Header() {
       </div>
 
       {/* Main header */}
-      <div className="flex h-14 px-4 items-center bg-black">
+      <div className="flex justify-between h-14 px-4 items-center bg-black">
         <div>
           <Link href="/" className="hover:opacity-70 transition-opacity">
             <Image
@@ -40,6 +41,10 @@ export default function Header() {
               alt="FriendMEX logo"
             />
           </Link>
+        </div>
+
+        <div>
+          <ConnectButton />
         </div>
       </div>
     </div>
