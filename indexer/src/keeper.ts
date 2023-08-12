@@ -6,6 +6,7 @@ import { getPrice } from "./utils/math";
 import constants from "./utils/constants";
 import type { Result } from "ethers/lib/utils";
 import axios, { type AxiosInstance } from "axios";
+import type { RPCMethod, Transaction } from "./utils/types";
 
 export default class Keeper {
   // Redis cache
@@ -129,31 +130,33 @@ export default class Keeper {
     logger.info(`Collecting ${numBlocks} blocks: ${startBlock} -> ${endBlock}`);
 
     // Create batch requests array
-    const requests = new Array(numBlocks).fill(0).map((_, i: number) => ({
-      method: "eth_getBlockByNumber",
-      // Hex block number, true => return all transactions
-      params: [`0x${(startBlock + i).toString(16)}`, true],
-      id: i,
-      jsonrpc: "2.0",
-    }));
+    const batchBlockRequests: RPCMethod[] = new Array(numBlocks)
+      .fill(0)
+      .map((_, i: number) => ({
+        method: "eth_getBlockByNumber",
+        // Hex block number, true => return all transactions
+        params: [`0x${(startBlock + i).toString(16)}`, true],
+        id: i,
+        jsonrpc: "2.0",
+      }));
 
-    // Execute request
+    // Execute request for batch blocks + transactions
     const {
-      data,
+      data: blockData,
     }: {
       data: {
         result: {
           number: string;
           timestamp: string;
           transactions: {
+            from: string;
             hash: string;
             to: string;
-            from: string;
             input: string;
           }[];
         };
       }[];
-    } = await this.rpc.post("/", requests);
+    } = await this.rpc.post("/", batchBlockRequests);
 
     // Setup contract
     const contractAddress: string = constants.CONTRACT_ADDRESS.toLowerCase();
@@ -162,23 +165,9 @@ export default class Keeper {
       constants.SIGNATURES.SELL,
     ];
 
-    // Filter for transactions that are either BUY or SELL to Friend.tech contract
-    let txs: {
-      hash: string;
-      timestamp: number;
-      blockNumber: number;
-      from: string;
-      subject: string;
-      isBuy: boolean;
-      amount: number;
-      cost: number;
-    }[] = [];
-    // List of users with modified supply balances
-    let userDiff: Set<string> = new Set();
-    // List of new users altogether
-    let newUsers: Set<string> = new Set();
-    for (const block of data) {
-      // For each transaction in block
+    // Filter for transaction hashes that are either BUY or SELL to friend.tech contract
+    let txHashes: string[] = [];
+    for (const block of blockData) {
       for (const tx of block.result.transactions) {
         if (
           // If transaction is to contract
@@ -186,21 +175,81 @@ export default class Keeper {
           // And, transaction is of format buyShares or sellShares
           contractSignatures.includes(tx.input.slice(0, 10))
         ) {
-          let result: Result = [];
-          try {
-            // Decode tx input
-            result = ethers.utils.defaultAbiCoder.decode(
-              ["address", "uint256"],
-              ethers.utils.hexDataSlice(tx.input, 4)
-            );
-          } catch {
-            logger.error(`Error parsing tx: ${tx.hash}`);
-            continue;
-          }
+          // Track tx hash
+          txHashes.push(tx.hash);
+        }
+      }
+    }
+
+    // If no relevant tx hashes
+    if (txHashes.length === 0) {
+      // Update latest synced block
+      const ok = await this.redis.set("synced_block", endBlock);
+      if (!ok) {
+        logger.error("Error storing synced_block in cache");
+        throw new Error("Could not synced_block store in Redis");
+      }
+      logger.info("Skipping because 0 relevant txs found");
+
+      return;
+    }
+
+    // Check all relevant transaction hashes for success status
+    const txBatchRequests: RPCMethod[] = new Array(txHashes.length)
+      .fill(0)
+      .map((_, i: number) => ({
+        method: "eth_getTransactionReceipt",
+        // Hex block number, true => return all transactions
+        params: [txHashes[i]],
+        id: i,
+        jsonrpc: "2.0",
+      }));
+
+    // Execute request for batch tx data
+    const {
+      data: txData,
+    }: {
+      data: {
+        result: {
+          transactionHash: string;
+          status: "0x0" | "0x1";
+        };
+      }[];
+    } = await this.rpc.post("/", txBatchRequests);
+
+    // Create set of successful transactions
+    const successTxHash: Set<string> = new Set();
+    for (const tx of txData) {
+      // Filter for success
+      if (tx.result.status === "0x1") {
+        successTxHash.add(tx.result.transactionHash.toLowerCase());
+      }
+    }
+
+    // Transform only successful transactions
+    let txs: Transaction[] = [];
+
+    // List of users with modified supply balances
+    let userDiff: Set<string> = new Set();
+    // List of new, untracked users
+    let newUsers: Set<string> = new Set();
+
+    // We iterate over blockData to preserve ordering
+    // This is necessary to appropriately calculate cost locally
+    for (const block of blockData) {
+      // For each transaction in block
+      for (const tx of block.result.transactions) {
+        // Filter for only successful transactions
+        if (successTxHash.has(tx.hash.toLowerCase())) {
+          // Decode tx input
+          const result: Result = ethers.utils.defaultAbiCoder.decode(
+            ["address", "uint256"],
+            ethers.utils.hexDataSlice(tx.input, 4)
+          );
 
           // Collect params and create tx
-          const subject: string = result[0].toLowerCase();
-          const amount: number = result[1].toNumber();
+          const subject = result[0].toLowerCase();
+          const amount = result[1].toNumber();
           const isBuy: boolean =
             tx.input.slice(0, 10) === constants.SIGNATURES.BUY;
 
@@ -242,6 +291,7 @@ export default class Keeper {
       }
     }
 
+    console.log(txs);
     logger.info(`Collected ${txs.length} transactions`);
 
     // Setup subject updates
