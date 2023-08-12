@@ -10,7 +10,7 @@ export default function Header() {
         <span className="text-xs text-zinc-400">
           An{" "}
           <a
-            href="https://github.com/anish-agnihotri/friend.expert"
+            href="https://github.com/anish-agnihotri/friendmex"
             target="_blank"
             rel="noopen noreferrer"
             className="hover:opacity-70 transition-opacity underline"

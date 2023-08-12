@@ -1,11 +1,10 @@
 import Layout from "components/Layout";
-import type { User, Trade } from "@prisma/client";
+import dynamic from "next/dynamic";
+import type { User } from "@prisma/client";
 import { WidthProvider, Responsive } from "react-grid-layout";
 
 // Trading views
 import Chart from "components/trading/Chart";
-import Search from "components/trading/Search";
-import BuySell from "components/trading/BuySell";
 import Leaderboard from "components/trading/Leaderboard";
 import NewestUsers from "components/trading/NewestUsers";
 import RecentTrades from "components/trading/RecentTrades";
@@ -22,6 +21,9 @@ import {
 } from "./api/stats/realized";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
+const BuySell = dynamic(() => import("components/trading/BuySell"), {
+  ssr: false,
+});
 
 export default function Home({
   newestUsers,

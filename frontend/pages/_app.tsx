@@ -19,7 +19,7 @@ const { chains, publicClient } = configureChains([base], [publicProvider()]);
 // Setup connector
 const { connectors } = getDefaultWallets({
   appName: "FriendMEX",
-  projectId: "FRIEND_MEX",
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "",
   chains,
 });
 

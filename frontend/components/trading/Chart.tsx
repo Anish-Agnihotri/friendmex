@@ -48,12 +48,14 @@ export default function Chart() {
       })`}
     >
       <div className="w-full h-full p-4">
-        <LineChart
-          className="h-full"
-          data={data}
-          index="timestamp"
-          categories={["Price (ETH)"]}
-        />
+        {data && (
+          <LineChart
+            className="h-full"
+            data={data}
+            index="timestamp"
+            categories={["Price (ETH)"]}
+          />
+        )}
       </div>
     </Card>
   );
