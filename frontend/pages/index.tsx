@@ -1,7 +1,6 @@
 import Layout from "components/Layout";
-import GridLayout from "react-grid-layout";
-import { useEffect, useState } from "react";
 import type { User, Trade } from "@prisma/client";
+import { WidthProvider, Responsive } from "react-grid-layout";
 
 // Trading views
 import Chart from "components/trading/Chart";
@@ -19,6 +18,8 @@ import { getLatestTrades } from "./api/stats/trades";
 import { getLeaderboardUsers } from "./api/stats/leaderboard";
 import { getRealizedProfits } from "./api/stats/realized";
 
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
 export default function Home({
   newestUsers,
   latestTrades,
@@ -30,41 +31,36 @@ export default function Home({
   leaderboardUsers: (User & { cost: number })[];
   realizedProfit: { address: string; profit: number }[];
 }) {
-  // Window width
-  const [width, setWidth] = useState(0);
-
-  /**
-   * Set window size = innerWidth
-   */
-  const setWindowWidth = () => {
-    console.log(window.innerWidth);
-    setWidth(window.innerWidth);
+  // Layout setting
+  const layout = {
+    md: [
+      { i: "search", x: 0, y: 0, w: 24, h: 0.6 },
+      { i: "chart", x: 0, y: 0.6, w: 24, h: 3 },
+      { i: "buy_sell", x: 3.6, y: 0, w: 24, h: 3 },
+      { i: "leaderboard", x: 6.6, y: 0, w: 24, h: 3 },
+      { i: "recent_trades", x: 9.6, y: 0, w: 24, h: 3 },
+      { i: "recent_token_trades", x: 12, y: 0, w: 24, h: 3 },
+      { i: "realized_profit", x: 15.6, y: 0, w: 24, h: 3 },
+      { i: "newest_users", x: 18.6, y: 0, w: 24, h: 3 },
+    ],
+    lg: [
+      { i: "search", x: 0, y: 0, w: 20, h: 0.6 },
+      { i: "chart", x: 0, y: 0, w: 20, h: 2.4 },
+      { i: "buy_sell", x: 20, y: 0, w: 8, h: 3 },
+      { i: "leaderboard", x: 28, y: 0, w: 8, h: 3 },
+      { i: "recent_trades", x: 0, y: 6, w: 36, h: 3 },
+      { i: "recent_token_trades", x: 0, y: 12, w: 18, h: 3 },
+      { i: "realized_profit", x: 18, y: 12, w: 9, h: 3 },
+      { i: "newest_users", x: 27, y: 12, w: 9, h: 3 },
+    ],
   };
-
-  // Collect window size
-  useEffect(() => {
-    // On mount
-    setWindowWidth();
-
-    // On resize
-    window.addEventListener("resize", setWindowWidth);
-    return () => window.removeEventListener("resize", setWindowWidth);
-  }, []);
-
-  const layout = [
-    { i: "search", x: 0, y: 0, w: 20, h: 0.6 },
-    { i: "chart", x: 0, y: 0, w: 20, h: 2.4 },
-    { i: "buy_sell", x: 20, y: 0, w: 8, h: 3 },
-    { i: "leaderboard", x: 28, y: 0, w: 8, h: 3 },
-    { i: "recent_trades", x: 0, y: 6, w: 36, h: 3 },
-    { i: "recent_token_trades", x: 0, y: 12, w: 18, h: 3 },
-    { i: "realized_profit", x: 18, y: 12, w: 9, h: 3 },
-    { i: "newest_users", x: 27, y: 12, w: 9, h: 3 },
-  ];
 
   return (
     <Layout>
-      <GridLayout layout={layout} cols={36} width={width}>
+      <ResponsiveGridLayout
+        layouts={layout}
+        cols={{ lg: 36, md: 24, sm: 12, xs: 6, xxs: 3 }}
+      >
         {/* Search */}
         <div key="search">
           <Search />
@@ -104,7 +100,7 @@ export default function Home({
         <div key="newest_users">
           <NewestUsers users={newestUsers} />
         </div>
-      </GridLayout>
+      </ResponsiveGridLayout>
     </Layout>
   );
 }
