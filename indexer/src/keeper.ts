@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import db from "../prisma/index";
 import logger from "./utils/logger";
 import { getPrice } from "./utils/math";
+import { chunks } from "./utils/helpers";
 import constants from "./utils/constants";
 import type { Result } from "ethers/lib/utils";
 import axios, { type AxiosInstance } from "axios";
@@ -120,6 +121,40 @@ export default class Keeper {
   }
 
   /**
+   * Chunks batch data request processing to avoid 1K request limit
+   * @param {RPCMethod[]} batch to execute
+   */
+  async chunkTxCall(batch: RPCMethod[]) {
+    let txData: {
+      result: {
+        transactionHash: string;
+        status: "0x0" | "0x1";
+      };
+    }[] = [];
+
+    // Execute batch data request in chunks of 950
+    for (const chunk of [...chunks(batch, 950)]) {
+      // Execute request for batch tx data
+      const {
+        data,
+      }: {
+        data: {
+          result: {
+            transactionHash: string;
+            status: "0x0" | "0x1";
+          };
+        }[];
+      } = await this.rpc.post("/", chunk);
+
+      // Concat results
+      txData.push(...data);
+    }
+
+    // Return tx data
+    return txData;
+  }
+
+  /**
    * Syncs trades between a certain range of blocks
    * @param {number} startBlock beginning index
    * @param {number} endBlock ending index
@@ -206,16 +241,7 @@ export default class Keeper {
       }));
 
     // Execute request for batch tx data
-    const {
-      data: txData,
-    }: {
-      data: {
-        result: {
-          transactionHash: string;
-          status: "0x0" | "0x1";
-        };
-      }[];
-    } = await this.rpc.post("/", txBatchRequests);
+    const txData = await this.chunkTxCall(txBatchRequests);
 
     // Create set of successful transactions
     const successTxHash: Set<string> = new Set();
@@ -291,7 +317,6 @@ export default class Keeper {
       }
     }
 
-    console.log(txs);
     logger.info(`Collected ${txs.length} transactions`);
 
     // Setup subject updates
