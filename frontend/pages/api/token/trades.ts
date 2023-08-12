@@ -8,14 +8,18 @@ export default async function handler(
 ) {
   // Collect token address
   const { address }: { address: string } = req.body;
-  if (address) return res.status(400).json({ error: "Missing token address" });
+  if (!address) return res.status(400).json({ error: "Missing token address" });
 
   try {
     // Get trades by token address
     const trades: Trade[] = await db.trade.findMany({
-      where: {
-        subjectAddress: address,
+      orderBy: {
+        timestamp: "desc",
       },
+      where: {
+        subjectAddress: address.toLowerCase(),
+      },
+      take: 100,
     });
 
     return res.status(200).json({ trades });

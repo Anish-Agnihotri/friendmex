@@ -119,11 +119,11 @@ export default function RecentTrades({
                 <TableCell>
                   {trade.isBuy ? (
                     <span className="text-buy">
-                      {Number(trade.cost) / 1e18} ETH
+                      {(Number(trade.cost) / 1e18).toFixed(6)} ETH
                     </span>
                   ) : (
                     <span className="text-sell">
-                      {Number(trade.cost) / 1e18} ETH
+                      {(Number(trade.cost) / 1e18).toFixed(6)} ETH
                     </span>
                   )}
                 </TableCell>

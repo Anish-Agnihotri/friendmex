@@ -39,6 +39,7 @@ export default function Header() {
               height={30}
               width={165}
               alt="FriendMEX logo"
+              priority
             />
           </Link>
         </div>
