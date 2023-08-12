@@ -12,7 +12,7 @@ export default function Card({
       <div className="bg-bitmex-strong px-2 py-0.5">
         <span className="text-sm font-bold">{title}</span>
       </div>
-      <div className="px-2 py-0.5 bg-bitmex-widget flex-1">{children}</div>
+      <div className="bg-bitmex-widget flex-1 overflow-auto">{children}</div>
     </div>
   );
 }

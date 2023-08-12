@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  address   String   @id @unique
+  supply    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdTrades Trade[] @relation("fromUser")
+  subjectTrades Trade[] @relation("subjectUser")
+}
+
+model Trade {
+  hash           String   @id @unique
+  timestamp      Int
+  blockNumber    Int
+  fromAddress    String
+  subjectAddress String
+  isBuy          Boolean
+  amount         Int
+  cost           Decimal @db.Decimal(65, 0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  fromUser    User @relation(name: "fromUser", fields: [fromAddress], references: [address])
+  subjectUser User @relation(name: "subjectUser", fields: [subjectAddress], references: [address])
+}
