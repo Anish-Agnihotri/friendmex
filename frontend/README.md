@@ -14,7 +14,3 @@ pnpm install
 # Run
 pnpm run dev
 ```
-
-## Bugs
-
-1. Technically SSR'ing a date is non-optimal, but I'm lazy

@@ -52,8 +52,8 @@ export default function Home({
   }, []);
 
   const layout = [
-    { i: "search", x: 0, y: 0, w: 20, h: 0.5 },
-    { i: "chart", x: 0, y: 0, w: 20, h: 2.5 },
+    { i: "search", x: 0, y: 0, w: 20, h: 0.6 },
+    { i: "chart", x: 0, y: 0, w: 20, h: 2.4 },
     { i: "buy_sell", x: 20, y: 0, w: 8, h: 3 },
     { i: "leaderboard", x: 28, y: 0, w: 8, h: 3 },
     { i: "recent_trades", x: 0, y: 6, w: 36, h: 3 },

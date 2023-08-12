@@ -1,3 +1,4 @@
+import Address from "components/Address";
 import Card from "components/Card";
 import {
   Table,
@@ -7,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
-import { truncateAddress } from "utils";
 
 export default function RealizedProfit({
   profit,
@@ -17,7 +17,7 @@ export default function RealizedProfit({
   return (
     <Card title="Realized Profit (updated every 30m)">
       <div>
-        <Table>
+        <Table className="[&_td]:py-0.5">
           <TableHeader>
             <TableRow>
               <TableHead>Address</TableHead>
@@ -28,14 +28,7 @@ export default function RealizedProfit({
             {profit.map((p, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <a
-                    href={`https://basescan.org/address/${p.address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    {truncateAddress(p.address, 8)}
-                  </a>
+                  <Address address={p.address} numTruncate={8} />
                 </TableCell>
                 <TableCell>
                   {p.profit > 0 ? (

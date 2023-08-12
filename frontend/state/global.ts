@@ -3,7 +3,7 @@ import { createContainer } from "unstated-next";
 
 function useGlobal() {
   const [address, setAddress] = useState<string>("");
-  return { address };
+  return { address, setAddress };
 }
 
 export const Global = createContainer(useGlobal);

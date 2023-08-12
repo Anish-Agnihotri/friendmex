@@ -8,7 +8,7 @@ import {
 } from "components/ui/table";
 import axios from "axios";
 import Card from "components/Card";
-import { truncateAddress } from "utils";
+import Address from "components/Address";
 import { formatDistance } from "date-fns";
 import type { User } from "@prisma/client";
 import { useState, useEffect } from "react";
@@ -61,7 +61,7 @@ export default function NewestUsers({
   return (
     <Card title={`Newest Users (updated ${timeSince}s ago)`}>
       <div>
-        <Table>
+        <Table className="[&_td]:py-0.5">
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
@@ -73,14 +73,7 @@ export default function NewestUsers({
             {users.map((user, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <a
-                    href={`https://basescan.org/address/${user.address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    {truncateAddress(user.address, 8)}
-                  </a>
+                  <Address address={user.address} numTruncate={8} />
                 </TableCell>
                 <TableCell>{user.supply}</TableCell>
                 <TableCell suppressHydrationWarning={true}>

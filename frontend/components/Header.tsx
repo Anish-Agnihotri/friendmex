@@ -6,8 +6,8 @@ export default function Header() {
   return (
     <div>
       {/* Sub header */}
-      <div className="flex items-center justify-center py-0.5">
-        <span className="text-xs">
+      <div className="bg-black border-b border-zinc-800 flex items-center justify-center py-0.5">
+        <span className="text-xs text-zinc-400">
           An{" "}
           <a
             href="https://github.com/anish-agnihotri/friend.expert"

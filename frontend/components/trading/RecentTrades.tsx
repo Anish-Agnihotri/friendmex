@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import Card from "components/Card";
 import { truncateAddress } from "utils";
+import Address from "components/Address";
 import { formatDistance } from "date-fns";
 import type { Trade } from "@prisma/client";
 import { useState, useEffect } from "react";
@@ -61,7 +62,7 @@ export default function RecentTrades({
   return (
     <Card title={`Recent Trades (updated ${timeSince}s ago)`}>
       <div>
-        <Table>
+        <Table className="[&_td]:py-0.5">
           <TableHeader>
             <TableRow>
               <TableHead>Hash</TableHead>
@@ -106,24 +107,10 @@ export default function RecentTrades({
                   </a>
                 </TableCell>
                 <TableCell>
-                  <a
-                    href={`https://basescan.org/block/${trade.fromAddress}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    {truncateAddress(trade.fromAddress, 10)}
-                  </a>
+                  <Address address={trade.fromAddress} numTruncate={10} />
                 </TableCell>
                 <TableCell>
-                  <a
-                    href={`https://basescan.org/block/${trade.subjectAddress}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    {truncateAddress(trade.subjectAddress, 10)}
-                  </a>
+                  <Address address={trade.subjectAddress} numTruncate={10} />
                 </TableCell>
                 <TableCell>
                   {trade.isBuy ? "+" : "-"}
