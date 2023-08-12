@@ -38,9 +38,9 @@ export default function Home({
   const layout = {
     md: [
       { i: "chart", x: 0, y: 0.6, w: 24, h: 3 },
-      { i: "buy_sell", x: 3.6, y: 0, w: 24, h: 3 },
       { i: "leaderboard", x: 6.6, y: 0, w: 24, h: 3 },
       { i: "recent_trades", x: 9.6, y: 0, w: 24, h: 3 },
+      { i: "buy_sell", x: 3.6, y: 0, w: 24, h: 3 },
       { i: "recent_token_trades", x: 12, y: 0, w: 24, h: 3 },
       { i: "realized_profit", x: 15.6, y: 0, w: 24, h: 3 },
       { i: "newest_users", x: 18.6, y: 0, w: 24, h: 3 },

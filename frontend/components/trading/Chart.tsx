@@ -1,12 +1,13 @@
 import axios from "axios";
 import Card from "components/Card";
-import { Global } from "state/global";
+import { Global, StateUser } from "state/global";
 import { LineChart } from "@tremor/react";
 import { useState, useEffect, useCallback } from "react";
+import { truncateAddress } from "utils";
 
 export default function Chart() {
   // Token address
-  const { address }: { address: string } = Global.useContainer();
+  const { user }: { user: StateUser } = Global.useContainer();
   // Data
   const [data, setData] = useState<{ timestamp: number; cost: number }[]>([]);
 
@@ -17,10 +18,10 @@ export default function Chart() {
     const {
       data: { data },
     } = await axios.post("/api/token/chart", {
-      address,
+      address: user.address,
     });
     setData(data);
-  }, [address]);
+  }, [user]);
 
   // On address change, collect trades
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function Chart() {
     }
 
     run();
-  }, [address, collectChart]);
+  }, [user, collectChart]);
 
   // On page load
   useEffect(() => {
@@ -41,7 +42,11 @@ export default function Chart() {
   }, [collectChart]);
 
   return (
-    <Card title="Token Chart">
+    <Card
+      title={`Token Chart (${
+        user.username ? `@${user.username}` : truncateAddress(user.address, 6)
+      })`}
+    >
       <div className="w-full h-full p-4">
         <LineChart
           className="h-full"

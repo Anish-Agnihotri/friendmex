@@ -2,7 +2,7 @@ import { Global } from "state/global";
 import type { AppProps } from "next/app";
 
 // CSS imports
-import "globals.css";
+import "global.css";
 import "react-resizable/css/styles.css";
 import "react-grid-layout/css/styles.css";
 import "@rainbow-me/rainbowkit/styles.css";

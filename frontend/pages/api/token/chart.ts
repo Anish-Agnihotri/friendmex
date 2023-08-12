@@ -1,7 +1,10 @@
+import Redis from "ioredis";
 import db from "prisma/index";
 import { getPrice } from "utils";
 import type { Trade } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
+
+const redis = new Redis(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,6 +15,10 @@ export default async function handler(
   if (!address) return res.status(400).json({ error: "Missing token address" });
 
   try {
+    // Check cache
+    const cacheData = await redis.get(`chart_${address}`);
+    if (cacheData) return res.status(200).json({ data: JSON.parse(cacheData) });
+
     // Get all trades by token address
     const trades: Trade[] = await db.trade.findMany({
       orderBy: {
@@ -41,8 +48,14 @@ export default async function handler(
       });
     }
 
+    // Store in redis cache
+    const ok = await redis.set(`chart_${address}`, JSON.stringify(data));
+    if (ok != "OK") throw new Error("Errored storing in cache");
+
+    // Return data
     return res.status(200).json({ data });
   } catch (e: unknown) {
+    console.log(e);
     // Catch errors
     if (e instanceof Error) {
       return res.status(500).json({ message: e.message });

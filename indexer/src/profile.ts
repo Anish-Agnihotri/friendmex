@@ -1,9 +1,11 @@
-import db from "../prisma/index";
 import logger from "./utils/logger";
 import constants from "./utils/constants";
+import { PrismaClient } from "@prisma/client";
 import axios, { type AxiosInstance } from "axios";
 
 export default class Profile {
+  // Database
+  db: PrismaClient;
   // Kosetto API client
   client: AxiosInstance;
 
@@ -11,6 +13,8 @@ export default class Profile {
    * Create profile manager
    */
   constructor() {
+    // Setup db
+    this.db = new PrismaClient();
     // Setup api client
     this.client = axios.create({
       baseURL: constants.API,
@@ -35,7 +39,7 @@ export default class Profile {
       // Check for no message
       if ("message" in data) {
         // Update user to profile checked
-        await db.user.update({
+        await this.db.user.update({
           where: {
             address,
           },
@@ -46,7 +50,7 @@ export default class Profile {
         return;
       } else {
         // Update data
-        await db.user.update({
+        await this.db.user.update({
           where: {
             address,
           },
@@ -71,7 +75,7 @@ export default class Profile {
    */
   async syncProfiles() {
     // Collect all users that have not been checked
-    const users: { address: string }[] = await db.user.findMany({
+    const users: { address: string }[] = await this.db.user.findMany({
       orderBy: {
         // Get highest supply users first
         supply: "desc",

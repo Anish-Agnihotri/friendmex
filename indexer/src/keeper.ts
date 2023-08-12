@@ -1,15 +1,17 @@
 import Redis from "ioredis";
 import { ethers } from "ethers";
-import db from "../prisma/index";
 import logger from "./utils/logger";
 import { getPrice } from "./utils/math";
 import { chunks } from "./utils/helpers";
 import constants from "./utils/constants";
+import { PrismaClient } from "@prisma/client";
 import type { Result } from "ethers/lib/utils";
 import axios, { type AxiosInstance } from "axios";
 import type { RPCMethod, Transaction } from "./utils/types";
 
 export default class Keeper {
+  // Database
+  private db: PrismaClient;
   // Redis cache
   private redis: Redis;
   // RPC client
@@ -25,6 +27,7 @@ export default class Keeper {
    * @param {string} redis_url Cache URL
    */
   constructor(rpc_url: string, redis_url: string) {
+    this.db = new PrismaClient();
     this.redis = new Redis(redis_url);
     this.rpc = axios.create({
       baseURL: rpc_url,
@@ -74,14 +77,13 @@ export default class Keeper {
    */
   async loadUsersAndSupplies(): Promise<void> {
     // Collect all users from database
-    const users: { address: string; supply: number }[] = await db.user.findMany(
-      {
+    const users: { address: string; supply: number }[] =
+      await this.db.user.findMany({
         select: {
           address: true,
           supply: true,
         },
-      }
-    );
+      });
 
     for (const user of users) {
       // Assign to list of users
@@ -323,7 +325,7 @@ export default class Keeper {
     let subjectUpserts = [];
     for (const subject of new Set([...userDiff, ...newUsers])) {
       subjectUpserts.push(
-        db.user.upsert({
+        this.db.user.upsert({
           where: {
             address: subject,
           },
@@ -339,7 +341,7 @@ export default class Keeper {
     }
 
     // Setup trade updates
-    let tradeInsert = db.trade.createMany({
+    let tradeInsert = this.db.trade.createMany({
       data: txs.map((tx) => ({
         hash: tx.hash,
         timestamp: tx.timestamp,
@@ -353,7 +355,7 @@ export default class Keeper {
     });
 
     // Insert subjects and trades as atomic transaction
-    await db.$transaction([...subjectUpserts, tradeInsert]);
+    await this.db.$transaction([...subjectUpserts, tradeInsert]);
     logger.info(
       `Added ${subjectUpserts.length} subject updates, ${txs.length} trades`
     );

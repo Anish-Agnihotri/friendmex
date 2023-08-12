@@ -8,7 +8,7 @@ import {
 } from "components/ui/table";
 import axios from "axios";
 import Card from "components/Card";
-import { Global } from "state/global";
+import { Global, StateUser } from "state/global";
 import { truncateAddress } from "utils";
 import Address from "components/Address";
 import { formatDistance } from "date-fns";
@@ -20,7 +20,7 @@ export default function RecentTokenTrades() {
   // Loading state
   const [loading, setLoading] = useState<boolean>(true);
   // Token address
-  const { address }: { address: string } = Global.useContainer();
+  const { user }: { user: StateUser } = Global.useContainer();
   // Trades
   const [trades, setTrades] = useState<TradeWithTwitterUser[]>([]);
 
@@ -33,14 +33,14 @@ export default function RecentTokenTrades() {
       const {
         data: { trades },
       } = await axios.post("/api/token/trades", {
-        address,
+        address: user.address,
       });
       setTrades(trades);
     } catch {
     } finally {
       setLoading(false);
     }
-  }, [address]);
+  }, [user]);
 
   // On address change, collect trades
   useEffect(() => {
@@ -49,10 +49,14 @@ export default function RecentTokenTrades() {
     }
 
     run();
-  }, [address, collectTrades]);
+  }, [user, collectTrades]);
 
   return (
-    <Card title="Recent Token Trades">
+    <Card
+      title={`Recent Token Trades (${
+        user.username ? `@${user.username}` : truncateAddress(user.address, 6)
+      })`}
+    >
       <div className="h-full">
         {loading && (
           <div className="flex mx-auto mt-4 items-center flex-col justify-center w-[calc(100%-2rem)] h-[calc(100%-2rem)] border-2 border-dashed rounded-md">
@@ -65,7 +69,7 @@ export default function RecentTokenTrades() {
           <div className="flex mt-4 mx-auto items-center flex-col justify-center w-[calc(100%-2rem)] h-[calc(100%-2rem)] border-2 border-dashed rounded-md">
             <CrossCircledIcon className="h-12 w-12" />
             <span className="text-lg pt-2">
-              {!address ? "Select an address" : "No trades found"}
+              {!user.address ? "Select an address" : "No trades found"}
             </span>
           </div>
         )}

@@ -1,11 +1,12 @@
 import Redis from "ioredis";
-import db from "../prisma/index";
 import logger from "./utils/logger";
 import { getPrice } from "./utils/math";
 import constants from "./utils/constants";
-import type { User } from "@prisma/client";
+import { PrismaClient, type User } from "@prisma/client";
 
 export default class Stats {
+  // Database
+  private db: PrismaClient;
   // Redis cache
   private redis: Redis;
 
@@ -14,6 +15,9 @@ export default class Stats {
    * @param {string} redis_url Cache URL
    */
   constructor(redis_url: string) {
+    // Setup db
+    this.db = new PrismaClient();
+    // Setup redis
     this.redis = new Redis(redis_url);
   }
 
@@ -21,7 +25,7 @@ export default class Stats {
    * Tracks newest 50 users
    */
   async updateNewestUsers(): Promise<void> {
-    const users: User[] = await db.user.findMany({
+    const users: User[] = await this.db.user.findMany({
       orderBy: {
         createdAt: "desc",
       },
@@ -35,7 +39,7 @@ export default class Stats {
    * Tracks latest 100 trades
    */
   async udpateRecentTrades(): Promise<void> {
-    const txs = await db.trade.findMany({
+    const txs = await this.db.trade.findMany({
       orderBy: {
         timestamp: "desc",
       },
@@ -60,7 +64,7 @@ export default class Stats {
   }
 
   async tokenLeaderboard(): Promise<void> {
-    const users: User[] = await db.user.findMany({
+    const users: User[] = await this.db.user.findMany({
       orderBy: {
         supply: "desc",
       },
@@ -84,7 +88,7 @@ export default class Stats {
   }
 
   async mostProfitableUsers() {
-    const users = await db.user.findMany({
+    const users = await this.db.user.findMany({
       select: {
         address: true,
         twitterPfpUrl: true,

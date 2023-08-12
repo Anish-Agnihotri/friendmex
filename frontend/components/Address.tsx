@@ -18,7 +18,7 @@ export default function Address({
 
   return (
     <Button
-      onClick={() => global.setAddress(address)}
+      onClick={() => global.setUser({ address, username, image })}
       className="p-0 bg-transparent text-black border-none rounded-none shadow-none text-sm font-normal underline hover:bg-transparent hover:opacity-70 transition-opacity"
     >
       {username && image ? (
