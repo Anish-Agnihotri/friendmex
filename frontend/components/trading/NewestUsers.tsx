@@ -73,7 +73,12 @@ export default function NewestUsers({
             {users.map((user, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <Address address={user.address} numTruncate={8} />
+                  <Address
+                    address={user.address}
+                    username={user.twitterUsername}
+                    image={user.twitterPfpUrl}
+                    numTruncate={8}
+                  />
                 </TableCell>
                 <TableCell>{user.supply}</TableCell>
                 <TableCell suppressHydrationWarning={true}>

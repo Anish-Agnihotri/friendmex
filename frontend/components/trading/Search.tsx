@@ -9,39 +9,32 @@ import Card from "components/Card";
 import { Button } from "components/ui/button";
 import { Command, CommandInput } from "components/ui/command";
 import { useState } from "react";
+import { Global } from "state/global";
 
 export default function Search() {
   const [open, setOpen] = useState<boolean>(false);
+  const { address, setAddress } = Global.useContainer();
   const [search, setSearch] = useState<string>("");
   const [results, setResults] = useState<unknown[]>([]);
 
   const handleSearch = () => {};
 
   return (
-    <Card title="Friend Search">
-      <div className="p-2 pt-3">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            {/* Trigger button */}
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              aria-label={""}
-              className="w-full justify-between"
-            >
-              Test
-              <ChevronDownIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-
-          {/* Popover menu */}
-          <PopoverContent className="p-0">
-            <Command>
+    <div className="p-4 z-50 bg-bitmex-strong border-b border-b-bitmex-strong-border">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" role="combobox" aria-expanded={open}>
+            {address}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent>
+          <Command>
+            <CommandList>
               <CommandInput
+                className="z-50"
                 placeholder="Search friends"
                 value={search}
-                onValueChange={handleSearch}
+                onValueChange={setSearch}
               />
 
               {results?.length === 0 ? (
@@ -53,10 +46,10 @@ export default function Search() {
                   <CommandGroup>{/* TODO: */}</CommandGroup>
                 </CommandList>
               )}
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
-    </Card>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }

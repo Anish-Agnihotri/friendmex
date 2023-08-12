@@ -3,29 +3,21 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const redis = new Redis(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
 
+export type RealizedProfitUser = {
+  address: string;
+  twitterPfpUrl?: string | null;
+  twitterUsername?: string | null;
+  profit: number;
+};
+
 /**
  * Collect realized profits (limit: 100) from 15s Redis cache
- * @returns {{ address: string; profit: number }[]} address to realized profit
+ * @returns {RealizedProfitUser[]} address to realized profit
  */
-export async function getRealizedProfits(): Promise<
-  { address: string; profit: number }[]
-> {
+export async function getRealizedProfits(): Promise<RealizedProfitUser[]> {
   const res: string | null = await redis.get("realized_profit");
   if (!res) return [];
-
-  // Take top 100
-  let values: { address: string; profit: number }[] = Object.entries(
-    JSON.parse(res)
-  ).map(([address, profit]) => ({
-    address,
-    profit: Number(profit) / 1e18,
-  }));
-
-  // Sort values
-  values = values.sort((a, b) => b.profit - a.profit);
-
-  // Return top 100
-  return values.slice(0, 100);
+  return JSON.parse(res);
 }
 
 export default async function handler(_: NextApiRequest, res: NextApiResponse) {

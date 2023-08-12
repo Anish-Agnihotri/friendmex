@@ -12,9 +12,9 @@ import { Global } from "state/global";
 import { truncateAddress } from "utils";
 import Address from "components/Address";
 import { formatDistance } from "date-fns";
-import type { Trade } from "@prisma/client";
 import { useEffect, useState, useCallback } from "react";
 import { CrossCircledIcon, SymbolIcon } from "@radix-ui/react-icons";
+import { TradeWithTwitterUser } from "pages/api/stats/trades";
 
 export default function RecentTokenTrades() {
   // Loading state
@@ -22,7 +22,7 @@ export default function RecentTokenTrades() {
   // Token address
   const { address }: { address: string } = Global.useContainer();
   // Trades
-  const [trades, setTrades] = useState<Trade[]>([]);
+  const [trades, setTrades] = useState<TradeWithTwitterUser[]>([]);
 
   /**
    * Collect trades from API backend
@@ -116,10 +116,20 @@ export default function RecentTokenTrades() {
                     </a>
                   </TableCell>
                   <TableCell>
-                    <Address address={trade.fromAddress} numTruncate={6} />
+                    <Address
+                      address={trade.fromAddress}
+                      username={trade.fromUser.twitterUsername}
+                      image={trade.fromUser.twitterPfpUrl}
+                      numTruncate={6}
+                    />
                   </TableCell>
                   <TableCell>
-                    <Address address={trade.subjectAddress} numTruncate={6} />
+                    <Address
+                      address={trade.subjectAddress}
+                      username={trade.subjectUser.twitterUsername}
+                      image={trade.subjectUser.twitterPfpUrl}
+                      numTruncate={6}
+                    />
                   </TableCell>
                   <TableCell>
                     {trade.isBuy ? "+" : "-"}

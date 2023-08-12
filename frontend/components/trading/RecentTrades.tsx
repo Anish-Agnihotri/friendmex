@@ -11,16 +11,16 @@ import Card from "components/Card";
 import { truncateAddress } from "utils";
 import Address from "components/Address";
 import { formatDistance } from "date-fns";
-import type { Trade } from "@prisma/client";
 import { useState, useEffect } from "react";
+import type { TradeWithTwitterUser } from "pages/api/stats/trades";
 
 export default function RecentTrades({
   trades: defaultTrades,
 }: {
-  trades: Trade[];
+  trades: TradeWithTwitterUser[];
 }) {
   // Trades
-  const [trades, setTrades] = useState<Trade[]>(defaultTrades);
+  const [trades, setTrades] = useState<TradeWithTwitterUser[]>(defaultTrades);
   const [_, setLastCheck] = useState<number>(+new Date() / 1000);
   const [timeSince, setTimeSince] = useState<number>(0);
 
@@ -107,10 +107,20 @@ export default function RecentTrades({
                   </a>
                 </TableCell>
                 <TableCell>
-                  <Address address={trade.fromAddress} numTruncate={10} />
+                  <Address
+                    address={trade.fromAddress}
+                    username={trade.fromUser.twitterUsername}
+                    image={trade.fromUser.twitterPfpUrl}
+                    numTruncate={10}
+                  />
                 </TableCell>
                 <TableCell>
-                  <Address address={trade.subjectAddress} numTruncate={10} />
+                  <Address
+                    address={trade.subjectAddress}
+                    username={trade.subjectUser.twitterUsername}
+                    image={trade.subjectUser.twitterPfpUrl}
+                    numTruncate={10}
+                  />
                 </TableCell>
                 <TableCell>
                   {trade.isBuy ? "+" : "-"}

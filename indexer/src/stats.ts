@@ -39,6 +39,20 @@ export default class Stats {
       orderBy: {
         timestamp: "desc",
       },
+      include: {
+        fromUser: {
+          select: {
+            twitterUsername: true,
+            twitterPfpUrl: true,
+          },
+        },
+        subjectUser: {
+          select: {
+            twitterUsername: true,
+            twitterPfpUrl: true,
+          },
+        },
+      },
       take: 100,
     });
 
@@ -73,6 +87,8 @@ export default class Stats {
     const users = await db.user.findMany({
       select: {
         address: true,
+        twitterPfpUrl: true,
+        twitterUsername: true,
         createdTrades: true,
       },
     });
@@ -90,7 +106,28 @@ export default class Stats {
       }
     }
 
-    await this.redis.set("realized_profit", JSON.stringify(userToProfit));
+    // Generate subset users
+    let subsetUsers: {
+      address: string;
+      twitterPfpUrl?: string | null;
+      twitterUsername?: string | null;
+      profit: number;
+    }[] = [];
+    for (const user of users) {
+      subsetUsers.push({
+        address: user.address,
+        twitterPfpUrl: user.twitterPfpUrl,
+        twitterUsername: user.twitterUsername,
+        profit: userToProfit[user.address],
+      });
+    }
+
+    // Sort users by profit
+    subsetUsers.sort((a, b) => b.profit - a.profit);
+    subsetUsers = subsetUsers.slice(0, 100); // Take top 100
+    subsetUsers = subsetUsers.map((u) => ({ ...u, profit: u.profit / 1e18 })); // Parse profit to ETH
+
+    await this.redis.set("realized_profit", JSON.stringify(subsetUsers));
   }
 
   /**

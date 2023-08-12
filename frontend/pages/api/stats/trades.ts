@@ -4,16 +4,27 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const redis = new Redis(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
 
+export type TradeWithTwitterUser = Trade & {
+  fromUser: {
+    twitterUsername?: string | null;
+    twitterPfpUrl?: string | null;
+  };
+  subjectUser: {
+    twitterUsername?: string | null;
+    twitterPfpUrl?: string | null;
+  };
+};
+
 /**
  * Collect newest trades (limit: 100)
- * @returns {Promise<Trade[]>} newest trades
+ * @returns {Promise<TradeWithTwitterUser[]>} newest trades
  */
-export async function getLatestTrades(): Promise<Trade[]> {
+export async function getLatestTrades(): Promise<TradeWithTwitterUser[]> {
   const res: string | null = await redis.get("latest_trades");
   if (!res) return [];
 
   // Parse as Trades
-  return JSON.parse(res) as Trade[];
+  return JSON.parse(res) as TradeWithTwitterUser[];
 }
 
 export default async function handler(_: NextApiRequest, res: NextApiResponse) {

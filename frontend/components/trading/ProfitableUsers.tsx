@@ -8,11 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
+import { RealizedProfitUser } from "pages/api/stats/realized";
 
 export default function RealizedProfit({
   profit,
 }: {
-  profit: { address: string; profit: number }[];
+  profit: RealizedProfitUser[];
 }) {
   return (
     <Card title="Realized Profit (updated every 30m)">
@@ -28,7 +29,12 @@ export default function RealizedProfit({
             {profit.map((p, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <Address address={p.address} numTruncate={8} />
+                  <Address
+                    address={p.address}
+                    username={p.twitterUsername}
+                    image={p.twitterPfpUrl}
+                    numTruncate={8}
+                  />
                 </TableCell>
                 <TableCell>
                   {p.profit > 0 ? (

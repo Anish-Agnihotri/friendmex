@@ -11,10 +11,13 @@ datasource db {
 }
 
 model User {
-  address   String   @id @unique
-  supply    Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  address         String   @id @unique
+  twitterUsername String?
+  twitterPfpUrl   String?
+  profileChecked  Boolean  @default(false)
+  supply          Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   createdTrades Trade[] @relation("fromUser")
   subjectTrades Trade[] @relation("subjectUser")
@@ -28,7 +31,7 @@ model Trade {
   subjectAddress String
   isBuy          Boolean
   amount         Int
-  cost           Decimal @db.Decimal(65, 0)
+  cost           Decimal  @db.Decimal(65, 0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

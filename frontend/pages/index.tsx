@@ -14,9 +14,12 @@ import RecentTokenTrades from "components/trading/RecentTokenTrades";
 
 // API
 import { getNewestUsers } from "./api/stats/newest";
-import { getLatestTrades } from "./api/stats/trades";
+import { TradeWithTwitterUser, getLatestTrades } from "./api/stats/trades";
 import { getLeaderboardUsers } from "./api/stats/leaderboard";
-import { getRealizedProfits } from "./api/stats/realized";
+import {
+  type RealizedProfitUser,
+  getRealizedProfits,
+} from "./api/stats/realized";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -27,14 +30,13 @@ export default function Home({
   realizedProfit,
 }: {
   newestUsers: User[];
-  latestTrades: Trade[];
+  latestTrades: TradeWithTwitterUser[];
   leaderboardUsers: (User & { cost: number })[];
-  realizedProfit: { address: string; profit: number }[];
+  realizedProfit: RealizedProfitUser[];
 }) {
   // Layout setting
   const layout = {
     md: [
-      { i: "search", x: 0, y: 0, w: 24, h: 0.6 },
       { i: "chart", x: 0, y: 0.6, w: 24, h: 3 },
       { i: "buy_sell", x: 3.6, y: 0, w: 24, h: 3 },
       { i: "leaderboard", x: 6.6, y: 0, w: 24, h: 3 },
@@ -44,8 +46,7 @@ export default function Home({
       { i: "newest_users", x: 18.6, y: 0, w: 24, h: 3 },
     ],
     lg: [
-      { i: "search", x: 0, y: 0, w: 20, h: 0.6 },
-      { i: "chart", x: 0, y: 0, w: 20, h: 2.4 },
+      { i: "chart", x: 0, y: 0, w: 20, h: 3 },
       { i: "buy_sell", x: 20, y: 0, w: 8, h: 3 },
       { i: "leaderboard", x: 28, y: 0, w: 8, h: 3 },
       { i: "recent_trades", x: 0, y: 6, w: 36, h: 3 },
@@ -61,11 +62,6 @@ export default function Home({
         layouts={layout}
         cols={{ lg: 36, md: 24, sm: 12, xs: 6, xxs: 3 }}
       >
-        {/* Search */}
-        <div key="search">
-          <Search />
-        </div>
-
         {/* Trading chart */}
         <div key="chart">
           <Chart />

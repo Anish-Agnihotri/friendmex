@@ -1,6 +1,6 @@
 import db from "prisma/index";
-import type { Trade } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
+import type { TradeWithTwitterUser } from "../stats/trades";
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,12 +12,26 @@ export default async function handler(
 
   try {
     // Get trades by token address
-    const trades: Trade[] = await db.trade.findMany({
+    const trades: TradeWithTwitterUser[] = await db.trade.findMany({
       orderBy: {
         timestamp: "desc",
       },
       where: {
         subjectAddress: address.toLowerCase(),
+      },
+      include: {
+        fromUser: {
+          select: {
+            twitterPfpUrl: true,
+            twitterUsername: true,
+          },
+        },
+        subjectUser: {
+          select: {
+            twitterPfpUrl: true,
+            twitterUsername: true,
+          },
+        },
       },
       take: 100,
     });
