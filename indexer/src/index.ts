@@ -1,3 +1,4 @@
+import Stats from "./stats";
 import Keeper from "./keeper";
 
 /**
@@ -13,8 +14,16 @@ async function execute(): Promise<void> {
 
   // Create new keeper
   const keeper = new Keeper(RPC_URL, REDIS_URL);
-  // Run keeper sync
-  await keeper.sync();
+  // Create new stats agent
+  const stats = new Stats(REDIS_URL);
+  await Promise.all([
+    // Run keeper sync
+    keeper.sync(),
+    // Run stats 15s collection
+    stats.sync15s(),
+    // Run stats 30m collection
+    stats.sync30m(),
+  ]);
 }
 
 (async () => {
