@@ -4,6 +4,7 @@ import db from "../prisma/index";
 import logger from "./utils/logger";
 import { getPrice } from "./utils/math";
 import constants from "./utils/constants";
+import type { Result } from "ethers/lib/utils";
 import axios, { type AxiosInstance } from "axios";
 
 export default class Keeper {
@@ -185,11 +186,17 @@ export default class Keeper {
           // And, transaction is of format buyShares or sellShares
           contractSignatures.includes(tx.input.slice(0, 10))
         ) {
-          // Decode tx input
-          const result = ethers.utils.defaultAbiCoder.decode(
-            ["address", "uint256"],
-            ethers.utils.hexDataSlice(tx.input, 4)
-          );
+          let result: Result = [];
+          try {
+            // Decode tx input
+            result = ethers.utils.defaultAbiCoder.decode(
+              ["address", "uint256"],
+              ethers.utils.hexDataSlice(tx.input, 4)
+            );
+          } catch {
+            logger.error(`Error parsing tx: ${tx.hash}`);
+            continue;
+          }
 
           // Collect params and create tx
           const subject: string = result[0].toLowerCase();
