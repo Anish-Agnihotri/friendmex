@@ -1,3 +1,6 @@
+/**
+ * JSONRPC method
+ */
 export type RPCMethod = {
   id: number;
   jsonrpc: string;
@@ -5,6 +8,9 @@ export type RPCMethod = {
   method: string;
 };
 
+/**
+ * Transformed transaction
+ */
 export type Transaction = {
   hash: string;
   timestamp: number;

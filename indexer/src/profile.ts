@@ -3,11 +3,20 @@ import constants from "./utils/constants";
 import { PrismaClient } from "@prisma/client";
 import axios, { type AxiosInstance } from "axios";
 
+/**
+ * Sleep for period of time
+ * @param {number} ms milliseconds to sleep
+ * @returns {Promise} resolves when sleep period finished
+ */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export default class Profile {
   // Database
   db: PrismaClient;
   // Kosetto API client
   client: AxiosInstance;
+  // Timeout duration
+  timeout: number = 500;
 
   /**
    * Create profile manager
@@ -62,11 +71,18 @@ export default class Profile {
         });
       }
 
+      // If successful, reduce timeout back to 1/2s
+      this.timeout = 500;
+
       // Log user
       logger.info(`Profile: collected @${data.twitterUsername}: ${address}`);
     } catch {
-      logger.error(`Error on profile collection, skipping`);
-      // Do nothing for now
+      // Timeout for a few seconds, exponential backoff
+      this.timeout *= 2;
+      await sleep(this.timeout);
+      logger.error(
+        `Error on profile collection, sleeping for ${this.timeout / 1000}s`
+      );
     }
   }
 
