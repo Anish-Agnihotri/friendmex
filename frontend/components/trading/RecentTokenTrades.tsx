@@ -6,66 +6,46 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
-import axios from "axios";
 import Card from "components/Card";
-import { Global, StateUser } from "state/global";
 import { truncateAddress } from "utils";
 import Address from "components/Address";
 import { formatDistance } from "date-fns";
-import { useEffect, useState, useCallback } from "react";
-import { CrossCircledIcon, SymbolIcon } from "@radix-ui/react-icons";
+import { renderTimeSince } from "utils/time";
+import { usePollData } from "utils/usePollData";
+import { Global, StateUser } from "state/global";
 import { TradeWithTwitterUser } from "pages/api/stats/trades";
+import { CrossCircledIcon, SymbolIcon } from "@radix-ui/react-icons";
 
 export default function RecentTokenTrades() {
-  // Loading state
-  const [loading, setLoading] = useState<boolean>(true);
   // Token address
   const { user }: { user: StateUser } = Global.useContainer();
   // Trades
-  const [trades, setTrades] = useState<TradeWithTwitterUser[]>([]);
-
-  /**
-   * Collect trades from API backend
-   */
-  const collectTrades = useCallback(async () => {
-    try {
-      setLoading(true);
-      const {
-        data: { trades },
-      } = await axios.post("/api/token/trades", {
-        address: user.address,
-      });
-      setTrades(trades);
-    } catch {
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  // On address change, collect trades
-  useEffect(() => {
-    async function run() {
-      await collectTrades();
-    }
-
-    run();
-  }, [user, collectTrades]);
+  const {
+    data: trades,
+    lastChecked,
+    loading,
+  } = usePollData<TradeWithTwitterUser[]>(
+    `/api/token/trades?address=${user.address}`,
+    [],
+    15 * 1000
+  );
 
   return (
     <Card
-      title={`Recent Token Trades (${
+      title="Token trades"
+      updated={`${
         user.username ? `@${user.username}` : truncateAddress(user.address, 6)
-      })`}
+      }, ${renderTimeSince(lastChecked)} ago`}
     >
       <div className="h-full">
-        {loading && (
+        {loading && trades.length === 0 && (
           <div className="flex mx-auto mt-4 items-center flex-col justify-center w-[calc(100%-2rem)] h-[calc(100%-2rem)] border-2 border-dashed rounded-md">
             <SymbolIcon className="h-12 w-12 animate-spin" />
             <span className="text-lg pt-2">Loading trades...</span>
           </div>
         )}
 
-        {!loading && trades.length === 0 && (
+        {trades.length === 0 && (
           <div className="flex mt-4 mx-auto items-center flex-col justify-center w-[calc(100%-2rem)] h-[calc(100%-2rem)] border-2 border-dashed rounded-md">
             <CrossCircledIcon className="h-12 w-12" />
             <span className="text-lg pt-2">
@@ -74,7 +54,7 @@ export default function RecentTokenTrades() {
           </div>
         )}
 
-        {!loading && trades.length > 0 && (
+        {trades.length > 0 && (
           <Table className="[&_td]:py-1">
             <TableHeader>
               <TableRow>
@@ -140,11 +120,11 @@ export default function RecentTokenTrades() {
                   <TableCell>
                     {trade.isBuy ? (
                       <span className="text-buy">
-                        {(Number(trade.cost) / 1e18).toFixed(6)} ETH
+                        {(Number(trade.cost) / 1e18).toFixed(6)} Ξ
                       </span>
                     ) : (
                       <span className="text-sell">
-                        {(Number(trade.cost) / 1e18).toFixed(6)} ETH
+                        {(Number(trade.cost) / 1e18).toFixed(6)} Ξ
                       </span>
                     )}
                   </TableCell>

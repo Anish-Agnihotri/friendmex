@@ -48,9 +48,9 @@ export default function RealizedProfit({
                 </TableCell>
                 <TableCell>
                   {p.profit > 0 ? (
-                    <span className="text-buy">{p.profit.toFixed(2)} ETH</span>
+                    <span className="text-buy">{p.profit.toFixed(2)} Ξ</span>
                   ) : (
-                    <span className="text-sell">{p.profit.toFixed(2)} ETH</span>
+                    <span className="text-sell">{p.profit.toFixed(2)} Ξ</span>
                   )}
                 </TableCell>
               </TableRow>

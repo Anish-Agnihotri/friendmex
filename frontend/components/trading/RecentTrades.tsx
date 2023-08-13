@@ -6,61 +6,27 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
-import axios from "axios";
 import Card from "components/Card";
 import { truncateAddress } from "utils";
 import Address from "components/Address";
 import { formatDistance } from "date-fns";
-import { useState, useEffect } from "react";
+import { renderTimeSince } from "utils/time";
+import { usePollData } from "utils/usePollData";
 import type { TradeWithTwitterUser } from "pages/api/stats/trades";
 
 export default function RecentTrades({
-  trades: defaultTrades,
+  trades: ssrTrades,
 }: {
   trades: TradeWithTwitterUser[];
 }) {
-  // Trades
-  const [trades, setTrades] = useState<TradeWithTwitterUser[]>(defaultTrades);
-  const [_, setLastCheck] = useState<number>(+new Date() / 1000);
-  const [timeSince, setTimeSince] = useState<number>(0);
-
-  /**
-   * Collect trades and update
-   */
-  async function updateTrades() {
-    const {
-      data: { trades },
-    } = await axios.get("/api/stats/trades");
-    setTrades(trades);
-  }
-
-  // Collect new trades every 15s
-  useEffect(() => {
-    async function run() {
-      await updateTrades();
-      setLastCheck(+new Date() / 1000);
-      setTimeSince(0);
-    }
-
-    // Update every 15s
-    const interval = setInterval(() => run(), 1000 * 15);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update time since
-  useEffect(() => {
-    // Increment time since each second
-    const interval = setInterval(
-      () => setTimeSince((previous) => previous + 1),
-      1 * 1000
-    );
-
-    // Clear on dismount
-    return () => clearInterval(interval);
-  }, []);
+  const { data: trades, lastChecked } = usePollData(
+    "/api/stats/trades",
+    ssrTrades,
+    15 * 1000
+  );
 
   return (
-    <Card title={`Recent Trades (updated ${timeSince}s ago)`}>
+    <Card title="Recent trades" updated={`${renderTimeSince(lastChecked)} ago`}>
       <div>
         <Table className="[&_td]:py-1">
           <TableHeader>
@@ -127,11 +93,11 @@ export default function RecentTrades({
                 <TableCell>
                   {trade.isBuy ? (
                     <span className="text-buy">
-                      {(Number(trade.cost) / 1e18).toFixed(6)} ETH
+                      {(Number(trade.cost) / 1e18).toFixed(6)} Ξ
                     </span>
                   ) : (
                     <span className="text-sell">
-                      {(Number(trade.cost) / 1e18).toFixed(6)} ETH
+                      {(Number(trade.cost) / 1e18).toFixed(6)} Ξ
                     </span>
                   )}
                 </TableCell>

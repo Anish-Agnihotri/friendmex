@@ -7,8 +7,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   // Collect token address
-  const { address }: { address: string } = req.body;
+  let { address } = req.query;
   if (!address) return res.status(400).json({ error: "Missing token address" });
+  // Only accept first query parameter
+  if (Array.isArray(address)) address = address[0];
 
   try {
     // Get trades by token address
@@ -36,7 +38,7 @@ export default async function handler(
       take: 100,
     });
 
-    return res.status(200).json({ trades });
+    return res.status(200).json(trades);
   } catch (e: unknown) {
     // Catch errors
     if (e instanceof Error) {

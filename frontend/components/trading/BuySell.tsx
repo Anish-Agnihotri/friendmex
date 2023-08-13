@@ -122,7 +122,7 @@ export default function BuySell() {
                     <span>
                       Buy {buy} share(s){" "}
                       {buyPrice
-                        ? `for ${(Number(buyPrice) / 1e18).toFixed(6)} ETH`
+                        ? `for ${(Number(buyPrice) / 1e18).toFixed(6)} Ξ`
                         : ""}
                     </span>
                   )}
@@ -172,7 +172,7 @@ export default function BuySell() {
                     <span>
                       Sell {sell} share(s){" "}
                       {sellPrice
-                        ? `for ${(Number(sellPrice) / 1e18).toFixed(6)} ETH`
+                        ? `for ${(Number(sellPrice) / 1e18).toFixed(6)} Ξ`
                         : ""}
                     </span>
                   )}

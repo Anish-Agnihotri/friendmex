@@ -1,8 +1,6 @@
-import Redis from "ioredis";
+import cache from "utils/cache";
 import type { Trade } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
-
-const redis = new Redis(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
 
 export type TradeWithTwitterUser = Trade & {
   fromUser: {
@@ -20,7 +18,7 @@ export type TradeWithTwitterUser = Trade & {
  * @returns {Promise<TradeWithTwitterUser[]>} newest trades
  */
 export async function getLatestTrades(): Promise<TradeWithTwitterUser[]> {
-  const res: string | null = await redis.get("latest_trades");
+  const res: string | null = await cache.get("latest_trades");
   if (!res) return [];
 
   // Parse as Trades
@@ -31,7 +29,7 @@ export default async function handler(_: NextApiRequest, res: NextApiResponse) {
   try {
     // Get latest trades
     const trades = await getLatestTrades();
-    return res.status(200).json({ trades });
+    return res.status(200).json(trades);
   } catch (e: unknown) {
     // Catch errors
     if (e instanceof Error) {

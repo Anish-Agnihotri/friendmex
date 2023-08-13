@@ -6,6 +6,8 @@ export function usePollData<T>(
   initial: T,
   frequency?: number
 ) {
+  // Loading status
+  const [loading, setLoading] = useState<boolean>(true);
   // Stored data
   const [data, setData] = useState<T>(initial);
   // Time since last checked
@@ -16,6 +18,8 @@ export function usePollData<T>(
    */
   const collectData = useCallback(async (): Promise<void> => {
     try {
+      // Toggle loading
+      setLoading(true);
       // Collect data
       const { data: newData }: { data: T } = await axios.get(endpoint);
       // Update data
@@ -29,6 +33,9 @@ export function usePollData<T>(
         // Else, log full object
         console.error(e);
       }
+    } finally {
+      // Toggle loading
+      setLoading(false);
     }
   }, [endpoint]);
 
@@ -43,6 +50,8 @@ export function usePollData<T>(
       await collectData();
       setLastChecked(0);
     }
+
+    execute();
 
     // If some update frequency exists
     if (frequency) {
@@ -61,7 +70,7 @@ export function usePollData<T>(
         clearInterval(checkInterval);
       };
     }
-  }, [collectData, frequency]);
+  }, [endpoint, collectData, frequency]);
 
-  return { data, lastChecked };
+  return { data, lastChecked, loading };
 }
