@@ -40,7 +40,7 @@ export default function Home({
   const layout = {
     md: [
       { i: "chart", x: 0, y: 0.6, w: 24, h: 3 },
-      { i: "leaderboard", x: 6.6, y: 0, w: 24, h: 3 },
+      { i: "discover", x: 6.6, y: 0, w: 24, h: 3 },
       { i: "recent_trades", x: 9.6, y: 0, w: 24, h: 3 },
       { i: "buy_sell", x: 3.6, y: 0, w: 24, h: 3 },
       { i: "recent_token_trades", x: 12, y: 0, w: 24, h: 3 },
@@ -50,7 +50,7 @@ export default function Home({
     lg: [
       { i: "chart", x: 0, y: 0, w: 20, h: 3 },
       { i: "buy_sell", x: 20, y: 0, w: 8, h: 3 },
-      { i: "leaderboard", x: 28, y: 0, w: 8, h: 3 },
+      { i: "discover", x: 28, y: 0, w: 8, h: 3 },
       { i: "recent_trades", x: 0, y: 6, w: 36, h: 3 },
       { i: "recent_token_trades", x: 0, y: 12, w: 18, h: 3 },
       { i: "realized_profit", x: 18, y: 12, w: 9, h: 3 },
@@ -62,8 +62,14 @@ export default function Home({
     <Layout>
       <ResponsiveGridLayout
         layouts={layout}
+        draggableHandle=".drag-handle"
         cols={{ lg: 36, md: 24, sm: 12, xs: 6, xxs: 3 }}
       >
+        {/* Discover */}
+        <div key="discover">
+          <Leaderboard users={leaderboardUsers} />
+        </div>
+
         {/* Trading chart */}
         <div key="chart">
           <Chart />
@@ -72,11 +78,6 @@ export default function Home({
         {/* Buy + Sell controller */}
         <div key="buy_sell">
           <BuySell />
-        </div>
-
-        {/* Leaderboard */}
-        <div key="leaderboard">
-          <Leaderboard users={leaderboardUsers} />
         </div>
 
         {/* Recent trades */}
