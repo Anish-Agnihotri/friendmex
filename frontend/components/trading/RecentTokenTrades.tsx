@@ -75,7 +75,7 @@ export default function RecentTokenTrades() {
         )}
 
         {!loading && trades.length > 0 && (
-          <Table className="[&_td]:py-0.5">
+          <Table className="[&_td]:py-1">
             <TableHeader>
               <TableRow>
                 <TableHead>Hash</TableHead>
@@ -124,7 +124,6 @@ export default function RecentTokenTrades() {
                       address={trade.fromAddress}
                       username={trade.fromUser.twitterUsername}
                       image={trade.fromUser.twitterPfpUrl}
-                      numTruncate={6}
                     />
                   </TableCell>
                   <TableCell>
@@ -132,7 +131,6 @@ export default function RecentTokenTrades() {
                       address={trade.subjectAddress}
                       username={trade.subjectUser.twitterUsername}
                       image={trade.subjectUser.twitterPfpUrl}
-                      numTruncate={6}
                     />
                   </TableCell>
                   <TableCell>

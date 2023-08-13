@@ -1,5 +1,3 @@
-import Address from "components/Address";
-import Card from "components/Card";
 import {
   Table,
   TableBody,
@@ -8,17 +6,30 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
+import Card from "components/Card";
+import Address from "components/Address";
+import { renderTimeSince } from "utils/time";
+import { usePollData } from "utils/usePollData";
 import { RealizedProfitUser } from "pages/api/stats/realized";
 
 export default function RealizedProfit({
-  profit,
+  profit: ssrProfit,
 }: {
   profit: RealizedProfitUser[];
 }) {
+  const { data, lastChecked } = usePollData(
+    "/api/stats/realized",
+    ssrProfit,
+    3 * 60 * 1000
+  );
+
   return (
-    <Card title="Realized Profit (updated every 30m)">
+    <Card
+      title="Realized Profit"
+      updated={`${renderTimeSince(lastChecked)} ago`}
+    >
       <div>
-        <Table className="[&_td]:py-0.5">
+        <Table className="[&_td]:py-1">
           <TableHeader>
             <TableRow>
               <TableHead>Address</TableHead>
@@ -26,14 +37,13 @@ export default function RealizedProfit({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {profit.map((p, i) => (
+            {data.map((p, i) => (
               <TableRow key={i}>
                 <TableCell>
                   <Address
                     address={p.address}
                     username={p.twitterUsername}
                     image={p.twitterPfpUrl}
-                    numTruncate={8}
                   />
                 </TableCell>
                 <TableCell>

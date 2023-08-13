@@ -79,7 +79,6 @@ export default function BuySell() {
                     address={user.address}
                     username={user.username}
                     image={user.image}
-                    numTruncate={6}
                   />
                 </span>
                 .

@@ -62,7 +62,7 @@ export default function RecentTrades({
   return (
     <Card title={`Recent Trades (updated ${timeSince}s ago)`}>
       <div>
-        <Table className="[&_td]:py-0.5">
+        <Table className="[&_td]:py-1">
           <TableHeader>
             <TableRow>
               <TableHead>Hash</TableHead>
@@ -111,7 +111,6 @@ export default function RecentTrades({
                     address={trade.fromAddress}
                     username={trade.fromUser.twitterUsername}
                     image={trade.fromUser.twitterPfpUrl}
-                    numTruncate={10}
                   />
                 </TableCell>
                 <TableCell>
@@ -119,7 +118,6 @@ export default function RecentTrades({
                     address={trade.subjectAddress}
                     username={trade.subjectUser.twitterUsername}
                     image={trade.subjectUser.twitterPfpUrl}
-                    numTruncate={10}
                   />
                 </TableCell>
                 <TableCell>

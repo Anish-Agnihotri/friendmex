@@ -1,6 +1,5 @@
 import Layout from "components/Layout";
 import dynamic from "next/dynamic";
-import type { User } from "@prisma/client";
 import { WidthProvider, Responsive } from "react-grid-layout";
 
 // Trading views
@@ -32,7 +31,7 @@ export default function Home({
   leaderboardUsers,
   realizedProfit,
 }: {
-  newestUsers: User[];
+  newestUsers: UserInfo[];
   latestTrades: TradeWithTwitterUser[];
   leaderboardUsers: UserInfo[];
   realizedProfit: RealizedProfitUser[];

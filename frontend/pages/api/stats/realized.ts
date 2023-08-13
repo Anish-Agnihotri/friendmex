@@ -1,7 +1,5 @@
-import Redis from "ioredis";
+import cache from "utils/cache";
 import { NextApiRequest, NextApiResponse } from "next";
-
-const redis = new Redis(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
 
 export type RealizedProfitUser = {
   address: string;
@@ -15,7 +13,7 @@ export type RealizedProfitUser = {
  * @returns {RealizedProfitUser[]} address to realized profit
  */
 export async function getRealizedProfits(): Promise<RealizedProfitUser[]> {
-  const res: string | null = await redis.get("realized_profit");
+  const res: string | null = await cache.get("realized_profit");
   if (!res) return [];
   return JSON.parse(res);
 }
@@ -24,7 +22,7 @@ export default async function handler(_: NextApiRequest, res: NextApiResponse) {
   try {
     // Get realized profits
     const profits = await getRealizedProfits();
-    return res.status(200).json({ profits });
+    return res.status(200).json(profits);
   } catch (e: unknown) {
     // Catch errors
     if (e instanceof Error) {

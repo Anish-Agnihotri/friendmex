@@ -1,26 +1,34 @@
-import Redis from "ioredis";
+import cache from "utils/cache";
+import { getPrice } from "utils";
 import type { User } from "@prisma/client";
+import type { UserInfo } from "components/User";
 import { NextApiRequest, NextApiResponse } from "next";
-
-const redis = new Redis(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
 
 /**
  * Collect newest users (limit: 50) from 15s Redis cache
- * @returns {Promise<User[]>} newest users
+ * @returns {Promise<UserInfo[]>} newest users
  */
-export async function getNewestUsers(): Promise<User[]> {
-  const res: string | null = await redis.get("latest_users");
+export async function getNewestUsers(): Promise<UserInfo[]> {
+  const res: string | null = await cache.get("latest_users");
   if (!res) return [];
 
   // Parse as Users
-  return JSON.parse(res) as User[];
+  const users = JSON.parse(res) as User[];
+
+  // Augment data
+  const augmented: UserInfo[] = users.map((user) => ({
+    ...user,
+    cost: getPrice(user.supply, 1),
+  }));
+
+  return augmented;
 }
 
 export default async function handler(_: NextApiRequest, res: NextApiResponse) {
   try {
     // Get newest users
     const users = await getNewestUsers();
-    return res.status(200).json({ users });
+    return res.status(200).json(users);
   } catch (e: unknown) {
     // Catch errors
     if (e instanceof Error) {

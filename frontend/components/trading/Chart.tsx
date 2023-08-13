@@ -43,9 +43,10 @@ export default function Chart() {
 
   return (
     <Card
-      title={`Token Chart (${
+      title="Token Chart"
+      updated={
         user.username ? `@${user.username}` : truncateAddress(user.address, 6)
-      })`}
+      }
     >
       <div className="w-full h-full p-4">
         {data && (
