@@ -5,7 +5,7 @@ import { WidthProvider, Responsive } from "react-grid-layout";
 
 // Trading views
 import Chart from "components/trading/Chart";
-import Leaderboard from "components/trading/Leaderboard";
+import Discover from "components/trading/Discover";
 import NewestUsers from "components/trading/NewestUsers";
 import RecentTrades from "components/trading/RecentTrades";
 import RealizedProfit from "components/trading/ProfitableUsers";
@@ -67,7 +67,7 @@ export default function Home({
       >
         {/* Discover */}
         <div key="discover">
-          <Leaderboard users={leaderboardUsers} />
+          <Discover leaderboard={leaderboardUsers} />
         </div>
 
         {/* Trading chart */}

@@ -22,7 +22,7 @@ export default async function handler(_: NextApiRequest, res: NextApiResponse) {
   try {
     // Get leaderboard users
     const users = await getLeaderboardUsers();
-    return res.status(200).json({ users });
+    return res.status(200).json(users);
   } catch (e: unknown) {
     // Catch errors
     if (e instanceof Error) {
