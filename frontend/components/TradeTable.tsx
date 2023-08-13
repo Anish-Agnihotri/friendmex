@@ -6,10 +6,12 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
+import { parseUSD } from "utils/usd";
 import { truncateAddress } from "utils";
 import Address from "components/Address";
 import type { ReactElement } from "react";
 import { formatDistance } from "date-fns";
+import { Global, Currency } from "state/global";
 import type { TradeWithTwitterUser } from "pages/api/stats/trades";
 
 export default function TradeTable({
@@ -17,6 +19,8 @@ export default function TradeTable({
 }: {
   trades: TradeWithTwitterUser[];
 }) {
+  const { eth, currency } = Global.useContainer();
+
   return (
     <Table className="[&_td]:py-1">
       <TableHeader>
@@ -40,6 +44,12 @@ export default function TradeTable({
               <TableRow className="bg-sell-30">{children}</TableRow>
             );
           }
+
+          // Calculate trade cost
+          const tradeCost: string =
+            currency === Currency.USD
+              ? `$${parseUSD((Number(trade.cost) / 1e18) * eth)}`
+              : `${(Number(trade.cost) / 1e18).toFixed(6)} Ξ`;
 
           return (
             <ColoredRow key={i}>
@@ -88,13 +98,9 @@ export default function TradeTable({
               </TableCell>
               <TableCell>
                 {trade.isBuy ? (
-                  <span className="text-buy">
-                    {(Number(trade.cost) / 1e18).toFixed(6)} Ξ
-                  </span>
+                  <span className="text-buy">{tradeCost}</span>
                 ) : (
-                  <span className="text-sell">
-                    {(Number(trade.cost) / 1e18).toFixed(6)} Ξ
-                  </span>
+                  <span className="text-sell">{tradeCost}</span>
                 )}
               </TableCell>
             </ColoredRow>

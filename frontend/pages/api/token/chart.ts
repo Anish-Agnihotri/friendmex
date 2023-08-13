@@ -55,7 +55,6 @@ export default async function handler(
     // Return data
     return res.status(200).json(data);
   } catch (e: unknown) {
-    console.log(e);
     // Catch errors
     if (e instanceof Error) {
       return res.status(500).json({ message: e.message });

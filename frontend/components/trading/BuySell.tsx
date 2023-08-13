@@ -1,17 +1,18 @@
 import Card from "components/Card";
-import { Global } from "state/global";
+import { parseUSD } from "utils/usd";
 import Address from "components/Address";
 import { useEffect, useState } from "react";
 import { Input } from "components/ui/input";
 import { Button } from "components/ui/button";
 import { ABI, CONTRACT_ADDRESS } from "utils";
+import { Global, Currency } from "state/global";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ButtonIcon, SymbolIcon } from "@radix-ui/react-icons";
 import { useAccount, useContractRead, useContractWrite } from "wagmi";
 
 export default function BuySell() {
   // Global state
-  const { user } = Global.useContainer();
+  const { eth, currency, user } = Global.useContainer();
 
   // Local state
   const [buy, setBuy] = useState<number>(0);
@@ -122,7 +123,11 @@ export default function BuySell() {
                     <span>
                       Buy {buy} share(s){" "}
                       {buyPrice
-                        ? `for ${(Number(buyPrice) / 1e18).toFixed(6)} Ξ`
+                        ? `for ${
+                            currency === Currency.ETH
+                              ? `${(Number(buyPrice) / 1e18).toFixed(6)} Ξ`
+                              : `$${parseUSD((Number(buyPrice) / 1e18) * eth)}`
+                          }`
                         : ""}
                     </span>
                   )}

@@ -1,7 +1,8 @@
+import { parseUSD } from "utils/usd";
 import { Button } from "./ui/button";
-import { Global } from "state/global";
 import { truncateAddress } from "utils";
 import type { User } from "@prisma/client";
+import { Global, Currency } from "state/global";
 
 /**
  * Extended user object including token cost
@@ -12,7 +13,7 @@ export type UserInfo = User & {
 
 export default function User({ data }: { data: UserInfo }) {
   // Global state
-  const { user, setUser } = Global.useContainer();
+  const { user, setUser, currency, eth } = Global.useContainer();
 
   // Profile image
   const image: string = data.twitterPfpUrl ?? "/rasters/default.png";
@@ -77,7 +78,11 @@ export default function User({ data }: { data: UserInfo }) {
           disabled={user.address === data.address}
           className="text-xs h-7 px-2 py-0 bg-buy hover:bg-buy hover:opacity-70 transition-opacity"
         >
-          {data.cost.toFixed(4)} Ξ
+          {currency === Currency.USD ? (
+            <span>${parseUSD(data.cost * eth)}</span>
+          ) : (
+            <span>{data.cost.toFixed(4)} Ξ</span>
+          )}
         </Button>
       </div>
 
@@ -86,7 +91,14 @@ export default function User({ data }: { data: UserInfo }) {
         <span>
           {data.supply} holder{data.supply == 1 ? "" : "s"}
         </span>
-        <span>MC: {marketCap.toFixed(2)} Ξ</span>
+        <span>
+          MC:{" "}
+          {currency === Currency.USD ? (
+            <span>${parseUSD(marketCap * eth)}</span>
+          ) : (
+            <span>{marketCap.toFixed(2)} Ξ</span>
+          )}
+        </span>
       </div>
     </div>
   );

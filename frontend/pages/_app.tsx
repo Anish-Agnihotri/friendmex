@@ -11,7 +11,11 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { base } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import {
+  darkTheme,
+  getDefaultWallets,
+  RainbowKitProvider,
+} from "@rainbow-me/rainbowkit";
 
 // Setup provider
 const { chains, publicClient } = configureChains([base], [publicProvider()]);
@@ -34,7 +38,7 @@ export default function FriendMEX({ Component, pageProps }: AppProps) {
   return (
     // Wrap in RainbowKit providers
     <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains}>
+      <RainbowKitProvider chains={chains} theme={darkTheme()}>
         {/* Wrap in global state provider */}
         <Global.Provider>
           <Component {...pageProps} />
