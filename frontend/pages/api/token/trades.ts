@@ -11,6 +11,7 @@ export default async function handler(
   if (!address) return res.status(400).json({ error: "Missing token address" });
   // Only accept first query parameter
   if (Array.isArray(address)) address = address[0];
+  address = address.toLowerCase();
 
   try {
     // Get trades by token address

@@ -16,17 +16,17 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         OR: [
           {
             address: {
-              contains: search,
+              contains: search.toLowerCase(),
             },
           },
           {
             address: {
-              search,
+              search: search.toLowerCase(),
             },
           },
           {
             address: {
-              startsWith: search,
+              startsWith: search.toLowerCase(),
             },
           },
           {

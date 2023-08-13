@@ -24,6 +24,9 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 const BuySell = dynamic(() => import("components/trading/BuySell"), {
   ssr: false,
 });
+const Holdings = dynamic(() => import("components/trading/Holdings"), {
+  ssr: false,
+});
 
 export default function Home({
   newestUsers,
@@ -41,6 +44,7 @@ export default function Home({
     md: [
       { i: "chart", x: 0, y: 0.6, w: 24, h: 3 },
       { i: "discover", x: 6.6, y: 0, w: 24, h: 3 },
+      { i: "holdings", x: 21.6, y: 0, w: 24, h: 3 },
       { i: "recent_trades", x: 9.6, y: 0, w: 24, h: 3 },
       { i: "buy_sell", x: 3.6, y: 0, w: 24, h: 3 },
       { i: "recent_token_trades", x: 12, y: 0, w: 24, h: 3 },
@@ -51,10 +55,11 @@ export default function Home({
       { i: "chart", x: 0, y: 0, w: 20, h: 3 },
       { i: "buy_sell", x: 20, y: 0, w: 8, h: 3 },
       { i: "discover", x: 28, y: 0, w: 8, h: 3 },
-      { i: "recent_trades", x: 0, y: 6, w: 36, h: 3 },
+      { i: "holdings", x: 30, y: 6, w: 6, h: 3 },
+      { i: "recent_trades", x: 0, y: 6, w: 30, h: 3 },
       { i: "recent_token_trades", x: 0, y: 12, w: 18, h: 3 },
-      { i: "realized_profit", x: 18, y: 12, w: 9, h: 3 },
-      { i: "newest_users", x: 27, y: 12, w: 9, h: 3 },
+      { i: "realized_profit", x: 18, y: 18, w: 9, h: 3 },
+      { i: "newest_users", x: 27, y: 18, w: 9, h: 3 },
     ],
   };
 
@@ -78,6 +83,10 @@ export default function Home({
         {/* Buy + Sell controller */}
         <div key="buy_sell">
           <BuySell />
+        </div>
+
+        <div key="holdings">
+          <Holdings />
         </div>
 
         {/* Recent trades */}
