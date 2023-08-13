@@ -58,7 +58,9 @@ module.exports = {
       },
       colors: {
         buy: "#00A969",
+        "buy-30": "#00A9690D",
         sell: "#DF0E29",
+        "sell-30": "#DF0E290D",
         "bitmex-widget": "#FAFAFA",
         "bitmex-strong": "#EAECEF",
         "bitmex-strong-border": "#CBD0D7",
