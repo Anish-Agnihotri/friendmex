@@ -1,19 +1,65 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "components/ui/table";
 import axios from "axios";
 import Card from "components/Card";
-import Address from "components/Address";
-import { useState, useEffect } from "react";
 import { Input } from "components/ui/input";
-import { usePollData } from "utils/usePollData";
-import User from "components/User";
 import { renderTimeSince } from "utils/time";
+import { usePollData } from "utils/usePollData";
+import { useDebounce } from "@uidotdev/usehooks";
+import User, { type UserInfo } from "components/User";
+import { useState, useCallback, useEffect } from "react";
+import { SymbolIcon, CrossCircledIcon } from "@radix-ui/react-icons";
+
+function useSearch(search: string) {
+  // Loading state
+  const [loading, setLoading] = useState<boolean>(false);
+  // Results
+  const [results, setResults] = useState<UserInfo[]>([]);
+
+  /**
+   * Collect search results from backend
+   */
+  const getResults = useCallback(async () => {
+    try {
+      // Toggle loading
+      setLoading(true);
+
+      // Request from backend
+      const { data } = await axios.post("/api/token/search", {
+        search,
+      });
+      setResults(data);
+    } catch (e: unknown) {
+      // If known error
+      if (e instanceof Error) {
+        // Log message
+        console.error(e.message);
+      } else {
+        // Else, log full object
+        console.error(e);
+      }
+    } finally {
+      // Toggle loading
+      setLoading(false);
+    }
+  }, [search]);
+
+  // On search change, call for new data
+  useEffect(() => {
+    async function execute() {
+      await getResults();
+    }
+
+    // If no input, set default
+    if (search === "") {
+      setLoading(false);
+      setResults([]);
+    } else {
+      // Else, process collection
+      execute();
+    }
+  }, [search, getResults]);
+
+  return { results, loading };
+}
 
 export default function Leaderboard({
   leaderboard: ssrLeaderboard,
@@ -22,19 +68,22 @@ export default function Leaderboard({
 }) {
   // Local state
   const [search, setSearch] = useState<string>("");
+  // Debounce search input to 150ms
+  const debouncedSearch: string = useDebounce(search, 150);
+  // Search results
+  const { results: searchResults, loading: searchLoading } =
+    useSearch(debouncedSearch);
 
-  // Backend data
+  // Backend data (leaderboard)
   const { data: leaderboard, lastChecked } = usePollData(
     "/api/stats/leaderboard",
     ssrLeaderboard,
     15 * 1000
   );
 
-  console.log(leaderboard);
-
   return (
     <Card title="Discover" updated={`${renderTimeSince(lastChecked)} ago`}>
-      <div className="relative">
+      <div className="h-full relative">
         {/* Search users */}
         <Input
           value={search}
@@ -43,82 +92,38 @@ export default function Leaderboard({
           className="h-8 w-[calc(100%-2px)] fixed focus-visible:ring-0 shadow-none border-l-0 border-r-0 border-t-0 border-b rounded-none bg-zinc-100"
         />
 
-        <div className="pt-11 pb-3 px-3 flex flex-col gap-3">
-          {leaderboard.map((user: any, i: number) => (
-            <User key={i} data={user} />
-          ))}
+        <div className="pt-11 pb-3 px-3 flex">
+          {debouncedSearch !== "" ? (
+            // Search exists
+            <div className="h-full flex flex-1">
+              {searchLoading ? (
+                <div className="pt-4 flex flex-col w-full items-center text-zinc-500">
+                  <SymbolIcon className="h-8 w-8 animate-spin" />
+                  <span className="pt-2 text-sm pr-2">Loading friends...</span>
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div className="flex w-full flex-col gap-y-3">
+                  {searchResults.map((user: UserInfo, i: number) => (
+                    <User key={i} data={user} />
+                  ))}
+                </div>
+              ) : (
+                <div className="pt-4 flex flex-col w-full items-center text-zinc-500">
+                  <CrossCircledIcon className="h-8 w-8" />
+                  <span className="pt-2 text-sm pr-2">No results found</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            // No search, return leaderboard
+            <div className="flex w-full flex-col gap-y-3">
+              {leaderboard.map((user: UserInfo, i: number) => (
+                <User key={i} data={user} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </Card>
   );
-  // const [users, setUsers] = useState<(User & { cost: number })[]>(defaultUsers);
-  // const [_, setLastCheck] = useState<number>(+new Date() / 1000);
-  // const [timeSince, setTimeSince] = useState<number>(0);
-
-  // /**
-  //  * Collect users and update
-  //  */
-  // async function updateUsers() {
-  //   const {
-  //     data: { users },
-  //   } = await axios.get("/api/stats/leaderboard");
-  //   setUsers(users);
-  // }
-
-  // // Collect new users every 15s
-  // useEffect(() => {
-  //   async function run() {
-  //     await updateUsers();
-  //     setLastCheck(+new Date() / 1000);
-  //     setTimeSince(0);
-  //   }
-
-  //   // Update every 15s
-  //   const interval = setInterval(() => run(), 1000 * 15);
-  //   return () => clearInterval(interval);
-  // }, []);
-
-  // // Update time since
-  // useEffect(() => {
-  //   // Increment time since each second
-  //   const interval = setInterval(
-  //     () => setTimeSince((previous) => previous + 1),
-  //     1 * 1000
-  //   );
-
-  //   // Clear on dismount
-  //   return () => clearInterval(interval);
-  // }, []);
-
-  // return (
-  //   <Card title="Discover">
-  //     <div>
-  //       <Table className="[&_td]:py-0.5">
-  //         <TableHeader>
-  //           <TableRow>
-  //             <TableHead>User</TableHead>
-  //             <TableHead>Supply</TableHead>
-  //             <TableHead>Price</TableHead>
-  //           </TableRow>
-  //         </TableHeader>
-  //         <TableBody>
-  //           {users.map((user, i) => (
-  //             <TableRow key={i}>
-  //               <TableCell>
-  //                 <Address
-  //                   address={user.address}
-  //                   username={user.twitterUsername}
-  //                   image={user.twitterPfpUrl}
-  //                   numTruncate={8}
-  //                 />
-  //               </TableCell>
-  //               <TableCell>{user.supply}</TableCell>
-  //               <TableCell>{user.cost.toFixed(2)} ETH</TableCell>
-  //             </TableRow>
-  //           ))}
-  //         </TableBody>
-  //       </Table>
-  //     </div>
-  //   </Card>
-  // );
 }

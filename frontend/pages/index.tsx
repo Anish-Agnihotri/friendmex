@@ -19,6 +19,7 @@ import {
   type RealizedProfitUser,
   getRealizedProfits,
 } from "./api/stats/realized";
+import { UserInfo } from "components/User";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const BuySell = dynamic(() => import("components/trading/BuySell"), {
@@ -33,7 +34,7 @@ export default function Home({
 }: {
   newestUsers: User[];
   latestTrades: TradeWithTwitterUser[];
-  leaderboardUsers: (User & { cost: number })[];
+  leaderboardUsers: UserInfo[];
   realizedProfit: RealizedProfitUser[];
 }) {
   // Layout setting

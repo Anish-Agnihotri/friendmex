@@ -1,21 +1,17 @@
-import Redis from "ioredis";
-import type { User } from "@prisma/client";
-import { NextApiRequest, NextApiResponse } from "next";
-
-const redis = new Redis(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
+import cache from "utils/cache";
+import type { UserInfo } from "components/User";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 /**
  * Collect leaderboard users (limit: 50) from 15s Redis cache
- * @returns {Promise<(User & { cost: number })[]>} leaderboard users
+ * @returns {Promise<UserInfo[]>} leaderboard users
  */
-export async function getLeaderboardUsers(): Promise<
-  (User & { cost: number })[]
-> {
-  const res: string | null = await redis.get("leaderboard");
+export async function getLeaderboardUsers(): Promise<UserInfo[]> {
+  const res: string | null = await cache.get("leaderboard");
   if (!res) return [];
 
   // Parse as leaderboard users
-  return JSON.parse(res) as (User & { cost: number })[];
+  return JSON.parse(res) as UserInfo[];
 }
 
 export default async function handler(_: NextApiRequest, res: NextApiResponse) {

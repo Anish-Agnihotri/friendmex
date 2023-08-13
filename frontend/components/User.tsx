@@ -1,4 +1,5 @@
 import { Button } from "./ui/button";
+import { Global } from "state/global";
 import { truncateAddress } from "utils";
 import type { User } from "@prisma/client";
 
@@ -10,6 +11,9 @@ export type UserInfo = User & {
 };
 
 export default function User({ data }: { data: UserInfo }) {
+  // Global state
+  const { user, setUser } = Global.useContainer();
+
   // Profile image
   const image: string = data.twitterPfpUrl ?? "/rasters/default.png";
   const alt: string = data.twitterUsername
@@ -62,7 +66,17 @@ export default function User({ data }: { data: UserInfo }) {
         </div>
 
         {/* Top right (trade button) */}
-        <Button className="text-xs h-7 px-2 py-0 bg-buy hover:bg-buy hover:opacity-70 transition-opacity">
+        <Button
+          onClick={() =>
+            setUser({
+              address: data.address,
+              username: data.twitterUsername,
+              image: data.twitterPfpUrl,
+            })
+          }
+          disabled={user.address === data.address}
+          className="text-xs h-7 px-2 py-0 bg-buy hover:bg-buy hover:opacity-70 transition-opacity"
+        >
           {data.cost.toFixed(4)} Ξ
         </Button>
       </div>
