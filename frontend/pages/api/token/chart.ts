@@ -4,6 +4,10 @@ import { getPrice } from "utils";
 import type { Trade } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
 
+// Types
+type ChartData = { timestamp: Date; "Price (ETH)": number }[];
+type CachedData = { count: number; chart: ChartData };
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -16,9 +20,22 @@ export default async function handler(
   address = address.toLowerCase();
 
   try {
+    // Get number of trades
+    const tradeCount: number = await db.trade.count({
+      where: {
+        subjectAddress: address.toLowerCase(),
+      },
+    });
+
     // Check cache
     const cacheData = await cache.get(`chart_${address}`);
-    if (cacheData) return res.status(200).json(JSON.parse(cacheData));
+    if (cacheData) {
+      // Parse cache data
+      const parsedCacheData = JSON.parse(cacheData) as CachedData;
+      // If no new trade since last check
+      if (tradeCount === parsedCacheData.count)
+        return res.status(200).send(parsedCacheData.chart);
+    }
 
     // Get all trades by token address
     const trades: Trade[] = await db.trade.findMany({
@@ -32,7 +49,7 @@ export default async function handler(
 
     // Generate cumulative data
     let supply = 0;
-    let data: { timestamp: Date; "Price (ETH)": number }[] = [];
+    let data: ChartData = [];
     for (const trade of trades) {
       // Modify amounts
       if (trade.isBuy) supply += trade.amount;
@@ -52,9 +69,10 @@ export default async function handler(
     // Store in redis cache
     const ok = await cache.set(
       `chart_${address}`,
-      JSON.stringify(data),
-      "EX",
-      60
+      JSON.stringify({
+        count: tradeCount,
+        chart: data,
+      } as CachedData)
     );
     if (ok != "OK") throw new Error("Errored storing in cache");
 
