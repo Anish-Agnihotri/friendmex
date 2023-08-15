@@ -50,7 +50,12 @@ export default async function handler(
     }
 
     // Store in redis cache
-    const ok = await cache.set(`chart_${address}`, JSON.stringify(data));
+    const ok = await cache.set(
+      `chart_${address}`,
+      JSON.stringify(data),
+      "EX",
+      60
+    );
     if (ok != "OK") throw new Error("Errored storing in cache");
 
     // Return data
