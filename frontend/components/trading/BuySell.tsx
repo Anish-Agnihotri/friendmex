@@ -177,7 +177,11 @@ export default function BuySell() {
                     <span>
                       Sell {sell} share(s){" "}
                       {sellPrice
-                        ? `for ${(Number(sellPrice) / 1e18).toFixed(6)} Ξ`
+                        ? `for ${
+                            currency === Currency.ETH
+                              ? `${(Number(sellPrice) / 1e18).toFixed(6)} Ξ`
+                              : `$${parseUSD((Number(sellPrice) / 1e18) * eth)}`
+                          }`
                         : ""}
                     </span>
                   )}
