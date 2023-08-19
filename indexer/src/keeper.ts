@@ -395,7 +395,6 @@ export default class Keeper {
         await this.syncTrades();
       } catch (e) {
         logger.error("Error when syncing between range", e);
-        throw new Error("Error when syncing between range");
       }
     }
   }
