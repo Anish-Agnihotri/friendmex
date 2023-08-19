@@ -6,13 +6,30 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
+import React from "react";
 import { parseUSD } from "utils/usd";
 import { truncateAddress } from "utils";
 import Address from "components/Address";
 import type { ReactElement } from "react";
 import { formatDistance } from "date-fns";
+import type { Prisma } from "@prisma/client";
 import { Global, Currency } from "state/global";
 import type { TradeWithTwitterUser } from "pages/api/stats/trades";
+
+// Render row background depending on trade type
+function ColoredRow({
+  isBuy,
+  children,
+}: {
+  isBuy: boolean;
+  children: ReactElement[];
+}) {
+  return isBuy ? (
+    <TableRow className="bg-buy-30">{children}</TableRow>
+  ) : (
+    <TableRow className="bg-sell-30">{children}</TableRow>
+  );
+}
 
 export default function TradeTable({
   trades,
@@ -20,6 +37,18 @@ export default function TradeTable({
   trades: TradeWithTwitterUser[];
 }) {
   const { eth, currency } = Global.useContainer();
+
+  /**
+   * Calculate cost of trade based on selected currency
+   * @param {Prisma.Decima} cost from DB
+   * @returns {string} formatted
+   */
+  const calculateTradeCost = (cost: Prisma.Decimal): string => {
+    // Calculate trade cost
+    return currency === Currency.USD
+      ? `$${parseUSD((Number(cost) / 1e18) * eth)}`
+      : `${(Number(cost) / 1e18).toFixed(6)} Ξ`;
+  };
 
   return (
     <Table className="[&_td]:py-1">
@@ -36,23 +65,10 @@ export default function TradeTable({
       </TableHeader>
       <TableBody>
         {trades.map((trade, i) => {
-          // Render row background depending on trade type
-          function ColoredRow({ children }: { children: ReactElement[] }) {
-            return trade.isBuy ? (
-              <TableRow className="bg-buy-30">{children}</TableRow>
-            ) : (
-              <TableRow className="bg-sell-30">{children}</TableRow>
-            );
-          }
-
-          // Calculate trade cost
-          const tradeCost: string =
-            currency === Currency.USD
-              ? `$${parseUSD((Number(trade.cost) / 1e18) * eth)}`
-              : `${(Number(trade.cost) / 1e18).toFixed(6)} Ξ`;
+          const tradeCost: string = calculateTradeCost(trade.cost);
 
           return (
-            <ColoredRow key={i}>
+            <ColoredRow isBuy={trade.isBuy} key={i}>
               <TableCell>
                 <a
                   href={`https://basescan.org/tx/${trade.hash}`}
@@ -63,7 +79,10 @@ export default function TradeTable({
                   {truncateAddress(trade.hash, 6)}
                 </a>
               </TableCell>
-              <TableCell suppressHydrationWarning={true}>
+              <TableCell
+                className="flex-nowrap"
+                suppressHydrationWarning={true}
+              >
                 {formatDistance(new Date(trade.timestamp * 1000), new Date(), {
                   addSuffix: true,
                 })}

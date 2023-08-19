@@ -34,8 +34,6 @@ export default function Holdings() {
     15 * 1000
   );
 
-  console.log(holdings);
-
   return (
     <Card title="Portfolio" updated={`${renderTimeSince(lastChecked)} ago`}>
       {!isConnected ? (
