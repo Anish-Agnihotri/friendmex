@@ -39,10 +39,7 @@ export default function FriendMEX({ Component, pageProps }: AppProps) {
     // Wrap in RainbowKit providers
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>
-        {/* Wrap in global state provider */}
-        <Global.Provider>
-          <Component {...pageProps} />
-        </Global.Provider>
+        <Component {...pageProps} />
       </RainbowKitProvider>
     </WagmiConfig>
   );

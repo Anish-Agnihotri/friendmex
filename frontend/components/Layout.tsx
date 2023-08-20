@@ -1,22 +1,28 @@
 import Head from "next/head";
 import Header from "components/Header";
 import type { ReactElement } from "react";
+import { Global, type StateUser } from "state/global";
 
 export default function Layout({
+  user,
   children,
 }: {
+  user: StateUser;
   children: ReactElement | ReactElement[];
 }) {
   return (
-    <div>
-      {/* Meta tags */}
-      <Meta />
+    // Wrap in global state provider (at layout level)
+    <Global.Provider initialState={user}>
+      <div>
+        {/* Meta tags */}
+        <Meta />
 
-      {/* Header */}
-      <Header />
+        {/* Header */}
+        <Header />
 
-      <div>{children}</div>
-    </div>
+        <div>{children}</div>
+      </div>
+    </Global.Provider>
   );
 }
 

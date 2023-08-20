@@ -79,10 +79,7 @@ export default function TradeTable({
                   {truncateAddress(trade.hash, 6)}
                 </a>
               </TableCell>
-              <TableCell
-                className="flex-nowrap"
-                suppressHydrationWarning={true}
-              >
+              <TableCell suppressHydrationWarning={true}>
                 {formatDistance(new Date(trade.timestamp * 1000), new Date(), {
                   addSuffix: true,
                 })}

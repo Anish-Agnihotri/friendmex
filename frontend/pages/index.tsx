@@ -1,5 +1,7 @@
-import Layout from "components/Layout";
 import dynamic from "next/dynamic";
+import Layout from "components/Layout";
+import constants from "utils/constants";
+import type { StateUser } from "state/global";
 import { WidthProvider, Responsive } from "react-grid-layout";
 
 // Trading views
@@ -12,13 +14,15 @@ import RecentTokenTrades from "components/trading/RecentTokenTrades";
 
 // API
 import { getNewestUsers } from "./api/stats/newest";
-import { TradeWithTwitterUser, getLatestTrades } from "./api/stats/trades";
+import { type TradeWithTwitterUser, getLatestTrades } from "./api/stats/trades";
 import { getLeaderboardUsers } from "./api/stats/leaderboard";
 import {
   type RealizedProfitUser,
   getRealizedProfits,
 } from "./api/stats/realized";
-import { UserInfo } from "components/User";
+import type { UserInfo } from "components/User";
+import type { NextPageContext } from "next";
+import { getStateUser } from "./api/user";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const BuySell = dynamic(() => import("components/trading/BuySell"), {
@@ -33,11 +37,13 @@ export default function Home({
   latestTrades,
   leaderboardUsers,
   realizedProfit,
+  user,
 }: {
   newestUsers: UserInfo[];
   latestTrades: TradeWithTwitterUser[];
   leaderboardUsers: UserInfo[];
   realizedProfit: RealizedProfitUser[];
+  user: StateUser;
 }) {
   // Layout setting
   const layout = {
@@ -64,7 +70,7 @@ export default function Home({
   };
 
   return (
-    <Layout>
+    <Layout user={user}>
       <ResponsiveGridLayout
         layouts={layout}
         draggableHandle=".drag-handle"
@@ -113,7 +119,26 @@ export default function Home({
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(ctx: NextPageContext) {
+  // Collect query params
+  let { address } = ctx.query;
+  // If array, select first
+  if (Array.isArray(address)) {
+    address = address[0];
+  }
+
+  let user: StateUser;
+  try {
+    // If no address throw
+    if (!address) throw new Error("No address found");
+
+    // Collect user by address
+    user = await getStateUser(address);
+  } catch {
+    // If error, default to Cobie
+    user = constants.COBIE;
+  }
+
   // Collect data
   const newestUsers = await getNewestUsers();
   const latestTrades = await getLatestTrades();
@@ -126,6 +151,7 @@ export async function getServerSideProps() {
       latestTrades,
       leaderboardUsers,
       realizedProfit,
+      user,
     },
   };
 }

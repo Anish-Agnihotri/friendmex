@@ -1,4 +1,6 @@
 import axios from "axios";
+import constants from "utils/constants";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { createContainer } from "unstated-next";
 
@@ -14,18 +16,14 @@ export enum Currency {
   ETH,
 }
 
-function useGlobal() {
-  // Default: @cobie
-  const [user, setUser] = useState<StateUser>({
-    address: "0x4e5f7e4a774bd30b9bdca7eb84ce3681a71676e1",
-    username: "cobie",
-    image:
-      "https://pbs.twimg.com/profile_images/1688496375707701248/WwWz33DI.jpg",
-  });
+function useGlobal(initialState: StateUser = constants.COBIE) {
+  // Routing
+  const { push } = useRouter();
 
+  // Default: @cobie
+  const [user, setUser] = useState<StateUser>(initialState);
   // Currency
   const [currency, setCurrency] = useState<Currency>(Currency.ETH);
-
   // ETH Price
   const [eth, setEth] = useState<number>(0);
 
@@ -38,6 +36,12 @@ function useGlobal() {
 
     collectEthPrice();
   }, []);
+
+  // Update query params on user change
+  useEffect(() => {
+    // Shallow update url
+    push(`/?address=${user.address}`, undefined, { shallow: true });
+  }, [push, user.address]);
 
   return { eth, user, setUser, currency, setCurrency };
 }
