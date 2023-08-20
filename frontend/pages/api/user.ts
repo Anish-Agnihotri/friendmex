@@ -1,5 +1,6 @@
 import db from "prisma/index";
 import cache from "utils/cache";
+import { getPrice } from "utils";
 import type { StateUser } from "state/global";
 import type { NextApiRequest, NextApiResponse } from "next";
 
@@ -49,14 +50,27 @@ export async function getStateUser(address: string): Promise<StateUser> {
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   // Collect address from body
-  const { address }: { address: string } = req.body;
+  let { address } = req.query;
   // Throw if missing parameter
   if (!address) return res.status(400).json({ error: "Missing address" });
+  if (!Array.isArray(address)) address = [address];
 
   try {
-    // Check for user
-    const user = await getStateUser(address);
-    return res.status(200).json(user);
+    // Check for users
+    const users = await db.user.findMany({
+      where: {
+        address: {
+          in: address,
+        },
+      },
+    });
+    // Augment w/ cost
+    const augmented = users.map((user) => ({
+      ...user,
+      cost: getPrice(user.supply, 1),
+    }));
+
+    return res.status(200).json(augmented);
   } catch (e: unknown) {
     // Catch errors
     if (e instanceof Error) {

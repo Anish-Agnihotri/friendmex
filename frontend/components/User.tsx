@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { truncateAddress } from "utils";
 import type { User } from "@prisma/client";
 import { Global, Currency } from "state/global";
+import { StarFilledIcon, StarIcon } from "@radix-ui/react-icons";
 
 /**
  * Extended user object including token cost
@@ -13,7 +14,8 @@ export type UserInfo = User & {
 
 export default function User({ data }: { data: UserInfo }) {
   // Global state
-  const { user, setUser, currency, eth } = Global.useContainer();
+  const { user, setUser, currency, eth, favorites, toggleFavorite } =
+    Global.useContainer();
 
   // Profile image
   const image: string = data.twitterPfpUrl ?? "/rasters/default.png";
@@ -66,24 +68,45 @@ export default function User({ data }: { data: UserInfo }) {
           </div>
         </div>
 
-        {/* Top right (trade button) */}
-        <Button
-          onClick={() =>
-            setUser({
-              address: data.address,
-              username: data.twitterUsername,
-              image: data.twitterPfpUrl,
-            })
-          }
-          disabled={user.address === data.address}
-          className="text-xs h-7 px-2 py-0 bg-buy hover:bg-buy hover:opacity-70 transition-opacity"
-        >
-          {currency === Currency.USD ? (
-            <span>${parseUSD(data.cost * eth)}</span>
-          ) : (
-            <span>{data.cost.toFixed(4)} Ξ</span>
-          )}
-        </Button>
+        {/* Top right */}
+        <div className="flex items-center">
+          {/* Favorite button */}
+          <button
+            className="mr-2"
+            onClick={() =>
+              toggleFavorite({
+                address: data.address.toLowerCase(),
+                image,
+                username,
+              })
+            }
+          >
+            {favorites[data.address.toLowerCase()] ? (
+              <StarFilledIcon className="stroke-amber-400 text-amber-400" />
+            ) : (
+              <StarIcon className="stroke-zinc-200" />
+            )}
+          </button>
+
+          {/* Trade button */}
+          <Button
+            onClick={() =>
+              setUser({
+                address: data.address,
+                username: data.twitterUsername,
+                image: data.twitterPfpUrl,
+              })
+            }
+            disabled={user.address === data.address}
+            className="text-xs h-7 px-2 py-0 bg-buy hover:bg-buy hover:opacity-70 transition-opacity"
+          >
+            {currency === Currency.USD ? (
+              <span>${parseUSD(data.cost * eth)}</span>
+            ) : (
+              <span>{data.cost.toFixed(4)} Ξ</span>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Bottom section */}

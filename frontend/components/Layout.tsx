@@ -43,7 +43,7 @@ function Meta() {
       <meta name="description" content={meta.description} />
 
       {/* Favicon */}
-      <link rel="icon" href="/favicon.ico" sizes="any" />
+      <link rel="icon" href="https://friendmex.com/favicon.ico" sizes="any" />
 
       {/* OG + Facebook */}
       <meta property="og:type" content="website" />
