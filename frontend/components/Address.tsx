@@ -1,6 +1,7 @@
 import { Global } from "state/global";
 import { Button } from "./ui/button";
 import { truncateAddress } from "utils";
+import { StarFilledIcon } from "@radix-ui/react-icons";
 
 export default function Address({
   address,
@@ -12,7 +13,7 @@ export default function Address({
   image?: string | null;
 }) {
   // Global state
-  const global = Global.useContainer();
+  const { favorites, setUser } = Global.useContainer();
 
   // Conditional renders
   const name: string | null | undefined =
@@ -21,7 +22,7 @@ export default function Address({
 
   return (
     <Button
-      onClick={() => global.setUser({ address, username, image })}
+      onClick={() => setUser({ address, username, image })}
       className="h-8 pl-1 pr-2 py-0 bg-white border text-black rounded-md shadow-none text-sm font-normal hover:bg-white hover:opacity-70 transition-opacity"
     >
       <div className="flex items-center">
@@ -33,6 +34,13 @@ export default function Address({
           className="rounded-md"
         />
         <span className="pl-2">{user}</span>
+
+        {favorites[address.toLowerCase()] && (
+          // Is favorited
+          <span className="ml-2">
+            <StarFilledIcon className="stroke-amber-400 text-amber-400" />
+          </span>
+        )}
       </div>
     </Button>
   );

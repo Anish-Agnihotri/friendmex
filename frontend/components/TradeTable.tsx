@@ -51,8 +51,8 @@ export default function TradeTable({
   };
 
   return (
-    <Table className="[&_td]:py-1">
-      <TableHeader>
+    <Table className="min-w-[950px] [&_td]:py-1">
+      <TableHeader className="sticky top-0">
         <TableRow>
           <TableHead>Hash</TableHead>
           <TableHead>Time Since</TableHead>

@@ -64,6 +64,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         },
       },
     });
+
     // Augment w/ cost
     const augmented = users.map((user) => ({
       ...user,
