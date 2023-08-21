@@ -19,8 +19,8 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       },
     }: { data: { ethereum: { usd: number } } } = await axios.get(CG_ETHUSD);
 
-    // Update cache with 1m TTL
-    const ok = await cache.set("eth_usd", usd, "EX", 60);
+    // Update cache with 5m TTL
+    const ok = await cache.set("eth_usd", usd, "EX", 60 * 5);
     if (ok !== "OK") throw new Error("Error updating cache");
 
     // Return price

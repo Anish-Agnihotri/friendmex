@@ -61,7 +61,7 @@ export default function Holdings() {
             </div>
           )}
 
-          {holdings.length === 0 && (
+          {!loading && holdings.length === 0 && (
             // No holdings found
             <div className="h-full p-4">
               <div className="flex h-full flex-col items-center justify-center border border-dashed rounded-md">

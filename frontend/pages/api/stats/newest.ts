@@ -1,6 +1,4 @@
 import cache from "utils/cache";
-import { getPrice } from "utils";
-import type { User } from "@prisma/client";
 import type { UserInfo } from "components/User";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -11,17 +9,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 export async function getNewestUsers(): Promise<UserInfo[]> {
   const res: string | null = await cache.get("latest_users");
   if (!res) return [];
-
-  // Parse as Users
-  const users = JSON.parse(res) as User[];
-
-  // Augment data
-  const augmented: UserInfo[] = users.map((user) => ({
-    ...user,
-    cost: getPrice(user.supply, 1),
-  }));
-
-  return augmented;
+  return JSON.parse(res) as UserInfo[];
 }
 
 export default async function handler(_: NextApiRequest, res: NextApiResponse) {

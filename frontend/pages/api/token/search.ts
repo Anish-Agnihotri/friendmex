@@ -16,22 +16,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         OR: [
           {
             address: {
-              contains: search.toLowerCase(),
-            },
-          },
-          {
-            address: {
               search: search.toLowerCase(),
-            },
-          },
-          {
-            address: {
-              startsWith: search.toLowerCase(),
-            },
-          },
-          {
-            twitterUsername: {
-              contains: search,
             },
           },
           {
@@ -39,19 +24,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
               search,
             },
           },
-          {
-            twitterUsername: {
-              startsWith: search,
-            },
-          },
         ],
-      },
-      orderBy: {
-        _relevance: {
-          fields: ["twitterUsername", "address"],
-          search,
-          sort: "desc",
-        },
       },
       take: 10,
     });

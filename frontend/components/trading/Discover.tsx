@@ -69,7 +69,7 @@ export default function Leaderboard({
   // Local state
   const [search, setSearch] = useState<string>("");
   // Debounce search input to 150ms
-  const debouncedSearch: string = useDebounce(search, 150);
+  const debouncedSearch: string = useDebounce(search, 300);
   // Search results
   const { results: searchResults, loading: searchLoading } =
     useSearch(debouncedSearch);

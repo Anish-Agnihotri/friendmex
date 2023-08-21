@@ -6,7 +6,43 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 // Types
 type ChartData = { timestamp: Date; "Price (ETH)": number }[];
-type CachedData = { count: number; chart: ChartData };
+type CachedData = { lastChecked: Date; chart: ChartData; supply: number };
+
+function processTrades(trades: Trade[], existing?: CachedData): CachedData {
+  let supply: number = 0,
+    data: ChartData = [];
+
+  // If existing chart data
+  if (existing) {
+    // Track trades
+    data.push(...existing.chart);
+    // Append supply
+    supply += existing.supply;
+  }
+
+  // Take remaining, new trades
+  for (const trade of trades) {
+    // Modify amounts
+    if (trade.isBuy) supply += trade.amount;
+    else supply -= trade.amount;
+
+    // Calculate new price for 1 token given supply change
+    const price = getPrice(supply, 1);
+    const fees = price * 0.1;
+
+    // Add new plot data
+    data.push({
+      timestamp: new Date(trade.timestamp * 1000),
+      "Price (ETH)": price - fees,
+    });
+  }
+
+  return {
+    lastChecked: new Date(),
+    chart: data,
+    supply,
+  };
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,56 +56,67 @@ export default async function handler(
   address = address.toLowerCase();
 
   try {
-    // Check cache
-    const cacheData = await cache.get(`user_chart_${address}`);
+    // Check cache to see if chart exists
+    const cacheData = await cache.get(`fmex_chart_${address}`);
+
+    let processed: CachedData;
     if (cacheData) {
-      // Parse cache data
-      const parsedCacheData = JSON.parse(cacheData) as CachedData;
-      return res.status(200).send(parsedCacheData.chart);
-    }
+      // If cache exists, check cache last update time
+      let parsedData: Omit<CachedData, "lastChecked"> & {
+        lastChecked: string;
+      } = JSON.parse(cacheData);
+      const parsedToType: CachedData = {
+        ...parsedData,
+        lastChecked: new Date(parsedData.lastChecked),
+      };
 
-    // Get all trades by token address
-    const trades: Trade[] = await db.trade.findMany({
-      orderBy: {
-        timestamp: "asc",
-      },
-      where: {
-        subjectAddress: address.toLowerCase(),
-      },
-    });
+      // Time since last update > 5m
+      const timeDiffInMS =
+        new Date().getTime() - parsedToType.lastChecked.getTime();
+      if (timeDiffInMS > 5 * 60 * 1000) {
+        // Collect new trades to occur since lastChecked time
+        const trades: Trade[] = await db.trade.findMany({
+          orderBy: {
+            timestamp: "asc",
+          },
+          where: {
+            subjectAddress: address.toLowerCase(),
+            createdAt: {
+              gte: parsedToType.lastChecked,
+            },
+          },
+        });
 
-    // Generate cumulative data
-    let supply = 0;
-    let data: ChartData = [];
-    for (const trade of trades) {
-      // Modify amounts
-      if (trade.isBuy) supply += trade.amount;
-      else supply -= trade.amount;
-
-      // Calculate new price for 1 token given supply change
-      const price = getPrice(supply, 1);
-      const fees = price * 0.1;
-
-      // Add new plot data
-      data.push({
-        timestamp: new Date(trade.timestamp * 1000),
-        "Price (ETH)": price - fees,
+        // Augment existing trades
+        processed = processTrades(trades, parsedToType);
+      } else {
+        // Simply return cached data
+        return res.status(200).json(parsedData.chart);
+      }
+    } else {
+      // If cache does not exist, retrieve all trades
+      const trades: Trade[] = await db.trade.findMany({
+        orderBy: {
+          timestamp: "asc",
+        },
+        where: {
+          subjectAddress: address.toLowerCase(),
+        },
       });
+
+      // Process trades
+      processed = processTrades(trades);
     }
 
-    // Store in redis cache
+    // Store in Redis
     const ok = await cache.set(
-      `chart_${address}`,
-      JSON.stringify({
-        chart: data,
-      } as CachedData),
-      "EX",
-      60 * 10 // 10 minute cache
+      `fmex_chart_${address}`,
+      JSON.stringify(processed)
     );
     if (ok != "OK") throw new Error("Errored storing in cache");
 
-    // Return data
-    return res.status(200).json(data);
+    // Return new data
+    return res.status(200).json(processed.chart);
   } catch (e: unknown) {
     // Catch errors
     if (e instanceof Error) {
