@@ -90,7 +90,7 @@ export default class Profile {
    * Syncs profile metadata to database
    */
   async syncProfiles() {
-    // Collect all users that have not been checked
+    // Collect all users that have not been checked (250 at a time)
     const users: { address: string }[] = await this.db.user.findMany({
       orderBy: {
         // Get highest supply users first
@@ -102,6 +102,7 @@ export default class Profile {
       where: {
         profileChecked: false,
       },
+      take: 250,
     });
 
     logger.info(`Collected ${users.length} to collect profile info`);
