@@ -1,8 +1,8 @@
+import User from "components/User";
 import Card from "components/Card";
 import { Global, StateUser } from "state/global";
 import { renderTimeSince } from "utils/time";
 import { usePollData } from "utils/usePollData";
-import User, { type UserInfo } from "components/User";
 import { CrossCircledIcon, SymbolIcon } from "@radix-ui/react-icons";
 
 const FORCED_DEFAULTS = {

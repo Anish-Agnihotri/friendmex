@@ -17,7 +17,7 @@ export default function User({
   isMinimal = false,
 }: {
   data: UserInfo;
-  isMinimal: boolean;
+  isMinimal?: boolean;
 }) {
   // Global state
   const { user, setUser, currency, eth, favorites, toggleFavorite } =
