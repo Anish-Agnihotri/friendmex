@@ -32,7 +32,13 @@ export default class Stats {
       take: 50,
     });
 
-    await this.redis.set("latest_users", JSON.stringify(users));
+    // Augment data with cost
+    const augmented = users.map((user) => ({
+      ...user,
+      cost: getPrice(user.supply, 1),
+    }));
+
+    await this.redis.set("latest_users", JSON.stringify(augmented));
   }
 
   /**
