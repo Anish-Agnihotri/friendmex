@@ -1,4 +1,5 @@
 import db from "prisma/index";
+import cache from "utils/cache";
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { TradeWithTwitterUser } from "../stats/trades";
 
@@ -14,6 +15,9 @@ export default async function handler(
   address = address.toLowerCase();
 
   try {
+    const cachedTrades = await cache.get(`c_trades_${address}`);
+    if (cachedTrades) return res.status(200).json(cachedTrades);
+
     // Get trades by token address
     const trades: TradeWithTwitterUser[] = await db.trade.findMany({
       orderBy: {
@@ -38,6 +42,15 @@ export default async function handler(
       },
       take: 100,
     });
+
+    // Store in redis cache
+    const ok = await cache.set(
+      `c_trades_${address}`,
+      JSON.stringify(trades),
+      "EX",
+      60 * 5 // 5 minute cache
+    );
+    if (ok != "OK") throw new Error("Errored storing in cache");
 
     return res.status(200).json(trades);
   } catch (e: unknown) {

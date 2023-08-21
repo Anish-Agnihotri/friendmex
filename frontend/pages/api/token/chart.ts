@@ -20,21 +20,12 @@ export default async function handler(
   address = address.toLowerCase();
 
   try {
-    // Get number of trades
-    const tradeCount: number = await db.trade.count({
-      where: {
-        subjectAddress: address.toLowerCase(),
-      },
-    });
-
     // Check cache
-    const cacheData = await cache.get(`chart_${address}`);
+    const cacheData = await cache.get(`user_chart_${address}`);
     if (cacheData) {
       // Parse cache data
       const parsedCacheData = JSON.parse(cacheData) as CachedData;
-      // If no new trade since last check
-      if (tradeCount === parsedCacheData.count)
-        return res.status(200).send(parsedCacheData.chart);
+      return res.status(200).send(parsedCacheData.chart);
     }
 
     // Get all trades by token address
@@ -70,9 +61,10 @@ export default async function handler(
     const ok = await cache.set(
       `chart_${address}`,
       JSON.stringify({
-        count: tradeCount,
         chart: data,
-      } as CachedData)
+      } as CachedData),
+      "EX",
+      60 * 10 // 10 minute cache
     );
     if (ok != "OK") throw new Error("Errored storing in cache");
 
