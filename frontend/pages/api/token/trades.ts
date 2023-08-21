@@ -16,7 +16,7 @@ export default async function handler(
 
   try {
     const cachedTrades = await cache.get(`c_trades_${address}`);
-    if (cachedTrades) return res.status(200).json(cachedTrades);
+    if (cachedTrades) return res.status(200).json(JSON.parse(cachedTrades));
 
     // Get trades by token address
     const trades: TradeWithTwitterUser[] = await db.trade.findMany({
