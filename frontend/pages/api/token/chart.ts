@@ -87,6 +87,20 @@ export default async function handler(
           },
         });
 
+        // If no new updates in last 5m
+        if (trades.length === 0) {
+          // Update cache and return latest
+          const ok = await cache.set(
+            `fmex_chart_${address}`,
+            JSON.stringify({
+              ...parsedToType,
+              lastChecked: new Date(),
+            })
+          );
+          if (ok != "OK") throw new Error("Errored storing in cache");
+          return res.status(200).json(parsedToType.chart);
+        }
+
         // Augment existing trades
         processed = processTrades(trades, parsedToType);
       } else {

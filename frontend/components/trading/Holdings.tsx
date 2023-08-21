@@ -31,7 +31,7 @@ export default function Holdings() {
   } = usePollData<(User & { balance: number })[]>(
     `/api/token/holdings?address=${address}`,
     [],
-    15 * 1000
+    60 * 1000
   );
 
   return (

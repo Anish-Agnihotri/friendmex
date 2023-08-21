@@ -57,21 +57,14 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
   try {
     // Check for users
-    const users = await db.user.findMany({
-      where: {
-        address: {
-          in: address,
-        },
-      },
-    });
+    const requests = address.map((addr) => getStateUser(addr.toLowerCase()));
+    const results = await Promise.allSettled(requests);
+    let fulfilled = [];
+    for (const res of results) {
+      if (res.status === "fulfilled") fulfilled.push(res.value);
+    }
 
-    // Augment w/ cost
-    const augmented = users.map((user) => ({
-      ...user,
-      cost: getPrice(user.supply, 1),
-    }));
-
-    return res.status(200).json(augmented);
+    return res.status(200).json(fulfilled);
   } catch (e: unknown) {
     // Catch errors
     if (e instanceof Error) {

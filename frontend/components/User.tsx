@@ -2,7 +2,7 @@ import { parseUSD } from "utils/usd";
 import { Button } from "./ui/button";
 import { truncateAddress } from "utils";
 import type { User } from "@prisma/client";
-import { Global, Currency } from "state/global";
+import { Global, Currency, StateUser } from "state/global";
 import { StarFilledIcon, StarIcon } from "@radix-ui/react-icons";
 
 /**
@@ -12,7 +12,13 @@ export type UserInfo = User & {
   cost: number;
 };
 
-export default function User({ data }: { data: UserInfo }) {
+export default function User({
+  data,
+  isMinimal = false,
+}: {
+  data: UserInfo;
+  isMinimal: boolean;
+}) {
   // Global state
   const { user, setUser, currency, eth, favorites, toggleFavorite } =
     Global.useContainer();
@@ -39,7 +45,7 @@ export default function User({ data }: { data: UserInfo }) {
   return (
     <div className="flex flex-col border rounded-lg bg-white">
       {/* Top section */}
-      <div className="p-2 border-b flex flex-row items-center justify-between w-full">
+      <div className="p-2 flex flex-row items-center justify-between w-full">
         {/* Top left (image, handle, address) */}
         <div className="flex items-center">
           <img
@@ -100,7 +106,9 @@ export default function User({ data }: { data: UserInfo }) {
             disabled={user.address === data.address}
             className="text-xs h-7 px-2 py-0 bg-buy hover:bg-buy hover:opacity-70 transition-opacity"
           >
-            {currency === Currency.USD ? (
+            {isMinimal ? (
+              <span>Buy</span>
+            ) : currency === Currency.USD ? (
               <span>${parseUSD(data.cost * eth)}</span>
             ) : (
               <span>{data.cost.toFixed(4)} Ξ</span>
@@ -110,19 +118,21 @@ export default function User({ data }: { data: UserInfo }) {
       </div>
 
       {/* Bottom section */}
-      <div className="flex items-center justify-between px-2 py-1 text-xs text-zinc-500">
-        <span>
-          {data.supply} holder{data.supply == 1 ? "" : "s"}
-        </span>
-        <span>
-          MC:{" "}
-          {currency === Currency.USD ? (
-            <span>${parseUSD(marketCap * eth)}</span>
-          ) : (
-            <span>{marketCap.toFixed(2)} Ξ</span>
-          )}
-        </span>
-      </div>
+      {!isMinimal && (
+        <div className="flex border-t items-center justify-between px-2 py-1 text-xs text-zinc-500">
+          <span>
+            {data.supply} holder{data.supply == 1 ? "" : "s"}
+          </span>
+          <span>
+            MC:{" "}
+            {currency === Currency.USD ? (
+              <span>${parseUSD(marketCap * eth)}</span>
+            ) : (
+              <span>{marketCap.toFixed(2)} Ξ</span>
+            )}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

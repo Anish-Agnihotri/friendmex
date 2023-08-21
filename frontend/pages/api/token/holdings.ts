@@ -105,6 +105,15 @@ export default async function handler(
 
       // If no new trades, simply return
       if (trades.length === 0) {
+        // Update last checked time
+        const ok = await cache.set(
+          `holdings_${address}`,
+          JSON.stringify({
+            ...parsed,
+            lastChecked: new Date(),
+          })
+        );
+        if (!ok) throw new Error("Could not save to Redis");
         return res.status(200).send(parsed.holdings);
       }
 

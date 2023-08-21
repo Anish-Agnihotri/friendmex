@@ -1,15 +1,23 @@
 import Card from "components/Card";
-import { Global } from "state/global";
+import { Global, StateUser } from "state/global";
 import { renderTimeSince } from "utils/time";
 import { usePollData } from "utils/usePollData";
 import User, { type UserInfo } from "components/User";
 import { CrossCircledIcon, SymbolIcon } from "@radix-ui/react-icons";
 
+const FORCED_DEFAULTS = {
+  cost: 0,
+  supply: 0,
+  profileChecked: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 export default function Favorites() {
   // Favorites list
   const { favorites } = Global.useContainer();
   // Backend data
-  const { data, lastChecked, loading } = usePollData<UserInfo[]>(
+  const { data, lastChecked, loading } = usePollData<StateUser[]>(
     `/api/user?address=${Object.keys(favorites).join("&address=")}`,
     [],
     15 * 1000
@@ -39,8 +47,18 @@ export default function Favorites() {
           ) : (
             // Favorites data
             <div className="flex w-full flex-col gap-y-3 pb-3">
-              {data.map((user: UserInfo, i: number) => (
-                <User key={i} data={user} />
+              {data.map((user: StateUser, i: number) => (
+                <User
+                  key={i}
+                  data={{
+                    address: user.address,
+                    twitterPfpUrl: user.image ?? null,
+                    twitterUsername: user.username ?? null,
+                    // Defaults to adhere
+                    ...FORCED_DEFAULTS,
+                  }}
+                  isMinimal={true}
+                />
               ))}
             </div>
           )}
