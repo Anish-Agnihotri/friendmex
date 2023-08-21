@@ -65,6 +65,16 @@ export default async function handler(
 
         // If no new trades, return cached
         if (trades.length === 0) {
+          // Update last checked time
+          const ok = await cache.set(
+            `cach_trades_${address}`,
+            JSON.stringify({
+              lastChecked: new Date(),
+              trades: parsed.trades,
+            })
+          );
+          if (ok != "OK") throw new Error("Errored storing in cache");
+
           return res.status(200).json(parsed.trades);
         }
 
