@@ -1,3 +1,5 @@
+import { useState } from "react";
+import Image from "next/image";
 import { parseUSD } from "utils/usd";
 import { Button } from "./ui/button";
 import { truncateAddress } from "utils";
@@ -24,7 +26,8 @@ export default function User({
     Global.useContainer();
 
   // Profile image
-  const image: string = data.twitterPfpUrl ?? "/rasters/default.png";
+  const fallbackImage = "/rasters/default.png";
+  const [image, setImage] = useState(data.twitterPfpUrl ?? fallbackImage);
   const alt: string = data.twitterUsername
     ? `@${data.twitterUsername} profile picture`
     : `${data.address} profile picture`;
@@ -51,11 +54,12 @@ export default function User({
       <div className="p-2 flex flex-row items-center justify-between w-full">
         {/* Top left (image, handle, address) */}
         <div className="flex items-center">
-          <img
+          <Image
             src={image}
             alt={alt}
             width={30}
             height={30}
+            onError={() => setImage(fallbackImage)}
             className="rounded-md"
           />
 
