@@ -124,7 +124,7 @@ export default function User({
       {!isMinimal && (
         <div className="flex border-t items-center justify-between px-2 py-1 text-xs text-zinc-500">
           <span>
-            {data.supply} holder{data.supply == 1 ? "" : "s"}
+            {data.supply} key{data.supply == 1 ? "" : "s"}
           </span>
           <span>
             MC:{" "}

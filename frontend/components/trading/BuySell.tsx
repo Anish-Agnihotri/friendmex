@@ -74,7 +74,7 @@ export default function BuySell() {
           <div className="flex flex-col h-full gap-3">
             <div>
               <span className="flex break-word text-sm items-center">
-                You own {Number(ownedAmount ?? 0)} share(s) of{" "}
+                You own {Number(ownedAmount ?? 0)} key(s) of{" "}
                 <span className="pl-2">
                   <Address
                     address={user.address}
@@ -86,8 +86,8 @@ export default function BuySell() {
               </span>
             </div>
 
-            {/* Buy shares */}
-            <Card title="Buy shares">
+            {/* Buy keys */}
+            <Card title="Buy keys">
               <div className="p-2">
                 <Input value={buy} disabled />
 
@@ -121,7 +121,7 @@ export default function BuySell() {
                     </div>
                   ) : (
                     <span>
-                      Buy {buy} share(s){" "}
+                      Buy {buy} key(s){" "}
                       {buyPrice
                         ? `for ${
                             currency === Currency.ETH
@@ -135,8 +135,8 @@ export default function BuySell() {
               </div>
             </Card>
 
-            {/* Sell shares */}
-            <Card title="Sell shares">
+            {/* Sell keys */}
+            <Card title="Sell keys">
               <div className="p-2">
                 <Input value={sell} disabled />
 
@@ -175,7 +175,7 @@ export default function BuySell() {
                     </div>
                   ) : (
                     <span>
-                      Sell {sell} share(s){" "}
+                      Sell {sell} key(s){" "}
                       {sellPrice
                         ? `for ${
                             currency === Currency.ETH
