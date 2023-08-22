@@ -82,7 +82,7 @@ export default async function handler(
         data = {
           lastChecked: new Date(),
           // Remove number of new trades from beginning
-          trades: [...parsed.trades, ...trades].slice(trades.length),
+          trades: [...trades, ...parsed.trades].slice(0, -1 * trades.length),
         };
       } else {
         // Return cached data
