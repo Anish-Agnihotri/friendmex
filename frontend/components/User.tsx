@@ -40,7 +40,10 @@ export default function User({
     : addressLink;
 
   // Market cap
-  const marketCap: number = data.cost * data.supply;
+  const marketCap: number =
+    Math.pow(data.supply, 3) / 48000 +
+    Math.pow(data.supply, 2) / 32000 +
+    data.supply / 96000;
 
   return (
     <div className="flex flex-col border rounded-lg bg-white">
