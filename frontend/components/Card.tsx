@@ -28,7 +28,7 @@ export default function Card({
 
         {/* Card header: right */}
         {updated && (
-          <span className="text-zinc-500 text-xs font-light pr-2">
+          <span className="text-zinc-500 text-xs font-light pr-2 tabular-nums">
             {updated}
           </span>
         )}
