@@ -76,12 +76,46 @@ export default class Profile {
 
       // Log user
       logger.info(`Profile: collected @${data.twitterUsername}: ${address}`);
-    } catch {
+    } catch (e: any) {
+      // Detect if address is not an official friendtech user 
+      if (e.response 
+          && e.response.status == 404 
+          && e.response.data 
+          && e.response.data.message === 'Address/User not found.'
+        )
+      {
+        await this.syncOffPlatformUser(address);
+        return;
+      }
       // Timeout for a few seconds, exponential backoff
       this.timeout *= 2;
       await sleep(this.timeout);
       logger.error(
         `Error on profile collection, sleeping for ${this.timeout / 1000}s`
+      );
+    }
+  }
+
+  /**
+   * Syncs users who trade using unregistered friend.tech addresses
+   * @param address
+   */
+  async syncOffPlatformUser(address: string) {
+    try { 
+      await this.db.user.update({
+        where: {
+          address,
+        },
+        data: {
+          twitterUsername: '',
+          twitterPfpUrl: '',
+          profileChecked: true,
+        },
+      });
+      logger.info(`Profile: collected Off Platform User : ${address}`);
+    } catch {
+      logger.error(
+        `Error on off platform profile collection`
       );
     }
   }
