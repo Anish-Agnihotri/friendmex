@@ -20,6 +20,8 @@ export default class Keeper {
   private users: Set<string> = new Set();
   // User to token supply (address => token supply)
   private supply: Record<string, number> = {};
+  // Locally consistent latest synced block
+  private latestSyncedBlock: number | undefined;
 
   /**
    * Create new Keeper
@@ -61,7 +63,9 @@ export default class Keeper {
    * @returns {Promise<number>} block number
    */
   async getSyncedBlock(): Promise<number> {
-    // Get value from cache
+    // If latest synced block exists locally, return
+    if (this.latestSyncedBlock) return this.latestSyncedBlock;
+    // Else, get value from cache
     const value: string | null = await this.redis.get("synced_block");
 
     // If value exists
@@ -391,6 +395,8 @@ export default class Keeper {
       try {
         // Sync start -> end blocks
         await this.syncTradeRange(startBlock, endBlock);
+        // Update last synced block
+        this.latestSyncedBlock = endBlock;
         // Recursively resync if diffSync > 0
         await this.syncTrades();
       } catch (e) {
