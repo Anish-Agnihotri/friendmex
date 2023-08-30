@@ -117,7 +117,7 @@ export default class Profile {
   async sync() {
     await this.syncProfiles();
 
-    logger.info("Sleeping metadata sync for 1m");
-    setTimeout(() => this.syncProfiles, 1000 * 60 * 60);
+    logger.info("Sleeping metadata sync for 60m");
+    setTimeout(() => this.sync(), 1000 * 60 * 60);
   }
 }
