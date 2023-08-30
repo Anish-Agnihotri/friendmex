@@ -156,7 +156,7 @@ export default class Stats {
   }
 
   async sync30m(): Promise<void> {
-    await this.mostProfitableUsers();
+    // await this.mostProfitableUsers();
 
     // Recollect in 1h
     logger.info("Stats: Collected half-hourly stats");

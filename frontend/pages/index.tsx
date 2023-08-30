@@ -9,17 +9,17 @@ import Chart from "components/trading/Chart";
 import Discover from "components/trading/Discover";
 import NewestUsers from "components/trading/NewestUsers";
 import RecentTrades from "components/trading/RecentTrades";
-import RealizedProfit from "components/trading/ProfitableUsers";
+// import RealizedProfit from "components/trading/ProfitableUsers";
 import RecentTokenTrades from "components/trading/RecentTokenTrades";
 
 // API
 import { getNewestUsers } from "./api/stats/newest";
 import { type TradeWithTwitterUser, getLatestTrades } from "./api/stats/trades";
 import { getLeaderboardUsers } from "./api/stats/leaderboard";
-import {
-  type RealizedProfitUser,
-  getRealizedProfits,
-} from "./api/stats/realized";
+// import {
+//   type RealizedProfitUser,
+//   getRealizedProfits,
+// } from "./api/stats/realized";
 import type { UserInfo } from "components/User";
 import type { NextPageContext } from "next";
 import { getStateUser } from "./api/user";
@@ -37,13 +37,13 @@ export default function Home({
   newestUsers,
   latestTrades,
   leaderboardUsers,
-  realizedProfit,
+  // realizedProfit,
   user,
 }: {
   newestUsers: UserInfo[];
   latestTrades: TradeWithTwitterUser[];
   leaderboardUsers: UserInfo[];
-  realizedProfit: RealizedProfitUser[];
+  // realizedProfit: RealizedProfitUser[];
   user: StateUser;
 }) {
   // Layout setting
@@ -65,9 +65,9 @@ export default function Home({
       { i: "discover", x: 28, y: 0, w: 8, h: 3 },
       { i: "recent_trades", x: 0, y: 6, w: 28, h: 3 },
       { i: "favorites", x: 28, y: 6, w: 8, h: 3 },
-      { i: "recent_token_trades", x: 0, y: 12, w: 18, h: 3 },
+      { i: "recent_token_trades", x: 0, y: 12, w: 25, h: 3 },
       { i: "realized_profit", x: 18, y: 18, w: 9, h: 3 },
-      { i: "newest_users", x: 27, y: 18, w: 9, h: 3 },
+      { i: "newest_users", x: 27, y: 18, w: 11, h: 3 },
       { i: "holdings", x: 0, y: 24, w: 36, h: 3 },
     ],
   };
@@ -114,10 +114,10 @@ export default function Home({
           <RecentTokenTrades />
         </div>
 
-        {/* Most profitable users */}
-        <div key="realized_profit">
+        {/* Most profitable users, temp disabled */}
+        {/* <div key="realized_profit">
           <RealizedProfit profit={realizedProfit} />
-        </div>
+        </div> */}
 
         {/* Newest users */}
         <div key="newest_users">
@@ -152,14 +152,14 @@ export async function getServerSideProps(ctx: NextPageContext) {
   const newestUsers = await getNewestUsers();
   const latestTrades = await getLatestTrades();
   const leaderboardUsers = await getLeaderboardUsers();
-  const realizedProfit = await getRealizedProfits();
+  // const realizedProfit = await getRealizedProfits();
 
   return {
     props: {
       newestUsers,
       latestTrades,
       leaderboardUsers,
-      realizedProfit,
+      // realizedProfit,
       user,
     },
   };
